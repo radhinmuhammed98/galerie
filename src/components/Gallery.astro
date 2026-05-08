@@ -1,0 +1,121 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+
+interface GalleryItem { src: string; caption?: string; }
+const items: GalleryItem[] = [
+  { src: '/images/about/image_5.jpg', caption: 'Atelier d\'orfèvrerie' },
+  { src: '/images/about/image_6.jpg', caption: 'Détail de gravure' },
+  { src: '/images/about/image_7.jpg', caption: 'Pièce de la collection privée' },
+  { src: '/images/about/image_8.jpg', caption: 'Vernissage' },
+];
+---
+
+<section class="py-32 px-6 md:px-12 bg-ivoire text-noir-orfevre relative" id="gallery">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-24">
+      <h2 class="gallery-h2 text-5xl md:text-7xl font-serif tracking-tighter">
+        {t['savoir.text']}
+      </h2>
+      <p class="font-sans text-sm uppercase tracking-widest text-or-fonce mt-8 md:mt-0 max-w-xs text-right" data-text-reveal="words">
+        {t['quote.text']}
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
+      {items.map((item, index) => (
+        <div
+          class={`gallery-item relative overflow-hidden group ${index % 2 !== 0 ? 'md:mt-32' : ''}`}
+          data-cursor="image"
+          data-cursor-label="voir"
+          data-caption={item.caption}
+        >
+          <div class="aspect-[3/4] w-full bg-gris-pierre relative overflow-hidden">
+            <img
+              src={item.src}
+              alt={item.caption ?? 'Savoir-faire'}
+              class="object-cover w-full h-full parallax-img transition-transform duration-1000 group-hover:scale-105"
+              loading="lazy"
+            />
+            <!-- Voile or-fonce subtil au hover -->
+            <div class="gallery-item__veil absolute inset-0 bg-or-fonce/0 group-hover:bg-or-fonce/10 transition-colors duration-700 pointer-events-none"></div>
+          </div>
+          {item.caption && (
+            <div class="gallery-item__caption absolute bottom-6 left-6 right-6 text-ivoire opacity-0 translate-y-2 transition-all duration-500 ease-out font-serif italic text-base md:text-lg pointer-events-none">
+              {item.caption}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
+  import { revealLetters } from "../lib/text-reveal";
+  import { revealImagesStaggered } from "../lib/image-reveal";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      // 1. H2 lettre par lettre
+      const h2 = document.querySelector<HTMLElement>(".gallery-h2");
+      if (h2) {
+        revealLetters(h2, { stagger: 0.025, duration: 0.7, scrollTrigger: { start: "top 80%", once: true } });
+      }
+
+      // 2. Mosaïque : mask diagonal + scale subtil par image, en stagger
+      const items = document.querySelectorAll<HTMLElement>(".gallery-item");
+      if (items.length) {
+        revealImagesStaggered(items, {
+          direction: "diagonal",
+          duration: 1.2, ease: "expo.out", stagger: 0.15,
+          coverColor: "#F4EFE6",
+          scaleFrom: 1.05, scaleDuration: 1.6,
+          imageSelector: "img",
+          scrollTrigger: { start: "top 80%", once: true },
+        });
+      }
+
+      // 3. Parallax conservé
+      document.querySelectorAll<HTMLImageElement>(".parallax-img").forEach((img) => {
+        if (!img.parentElement) return;
+        gsap.fromTo(img,
+          { y: -30 },
+          { y: 30, ease: "none",
+            scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true } }
+        );
+      });
+
+      // 4. Hover : caption italic révélée en fade + slide
+      items.forEach((item) => {
+        const caption = item.querySelector<HTMLElement>(".gallery-item__caption");
+        if (!caption) return;
+        item.addEventListener("mouseenter", () => {
+          gsap.to(caption, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
+        });
+        item.addEventListener("mouseleave", () => {
+          gsap.to(caption, { opacity: 0, y: 8, duration: 0.4, ease: "power2.in" });
+        });
+      });
+
+      void ScrollTrigger;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .gallery-item__caption {
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+    will-change: opacity, transform;
+  }
+</style>

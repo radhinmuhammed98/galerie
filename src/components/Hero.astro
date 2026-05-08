@@ -1,0 +1,192 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+import HeroScrollIndicator from './HeroScrollIndicator.astro';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+
+// H1 hero : split en 2 lignes pour éviter la coupure mid-mot d'« audacieux »
+const heroH1Lines = lang === 'en'
+  ? ["A space for bold art", "and new ideas"]
+  : ["Un espace pour l'art audacieux", "et les nouvelles idées"];
+---
+
+<section class="hero-scroll-section relative bg-noir-orfevre" id="hero">
+  <!-- Conteneur sticky : le canvas reste fixé pendant que la section défile -->
+  <div class="hero-scroll-pin sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+
+    <!-- Particules dorées 3D -->
+    <div id="hero-particles" class="absolute inset-0 z-[2] pointer-events-none opacity-40 mix-blend-screen"></div>
+
+    <!-- Canvas image-sequence — ratio 16:9 calé sur la nouvelle source vidéo (1296×704).
+         Démarre INVISIBLE (opacity 0) pour ne pas chevaucher le titre ;
+         se révèle progressivement au scroll. -->
+    <canvas
+      id="hero-sequence-canvas"
+      class="absolute aspect-[16/9] w-[min(96vw,170vh)] max-h-[95vh] z-0 rounded-lg shadow-2xl border border-ivoire/10"
+      style="opacity: 0;"
+    ></canvas>
+
+    <!-- Loader % visible pendant le préchargement -->
+    <div id="hero-sequence-loader" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-[4] text-ivoire/50 text-xs font-sans tracking-[0.3em] uppercase">
+      <span id="hero-sequence-progress">0</span>%
+    </div>
+
+    <!-- OVERLAY 1 : Titre éditorial principal -->
+    <!-- Pas de max-w-* sur le wrapper : avec absolute + inset-0, max-width casse le centrage
+         (gauche/droite à 0 → pinned à gauche). Le H1 a déjà sa propre max-w-4xl. -->
+    <div class="hero-overlay-1 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none">
+      <h1 class="hero-h1 text-ivoire text-3xl md:text-5xl lg:text-[4rem] leading-[1.05] font-serif italic tracking-tight select-none px-4 max-w-4xl">
+        {heroH1Lines.map((line) => <span class="block">{line}</span>)}
+      </h1>
+
+    </div>
+
+    <!-- Indicateur scroll dédié : ligne verticale + point lumineux qui descend -->
+    <HeroScrollIndicator />
+
+    <!-- OVERLAY 2 : Citation héritage -->
+    <div class="hero-overlay-2 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none opacity-0">
+      <h2 class="text-ivoire text-4xl md:text-7xl font-serif leading-[1.05] tracking-tight max-w-4xl px-4 select-none">
+        {t['heritage.text']}
+      </h2>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  import { gsap } from "../lib/gsap-config";
+  import { initScrollSequence } from "../lib/scroll-sequence";
+  import { initParticles } from "./ParticlesBackground";
+  import { splitText } from "../lib/text-reveal";
+
+  // Hero : 100 frames extraites avec ffmpeg (fps=10, qualité 55, scale=720)
+  const HERO_FRAME_COUNT = 100;
+  const heroFramePath = (i: number) =>
+    `/images/sequence/hero/frame_${String(i + 1).padStart(3, "0")}.webp`;
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const canvas = document.getElementById("hero-sequence-canvas") as HTMLCanvasElement | null;
+      const section = document.querySelector(".hero-scroll-section") as HTMLElement | null;
+      const overlay1 = document.querySelector(".hero-overlay-1") as HTMLElement | null;
+      const overlay2 = document.querySelector(".hero-overlay-2") as HTMLElement | null;
+      const loader = document.getElementById("hero-sequence-loader");
+      const progress = document.getElementById("hero-sequence-progress");
+      const particlesContainer = document.getElementById("hero-particles");
+
+      if (!canvas || !section || !overlay1 || !overlay2) return;
+
+      // 550vh = scroll très contemplatif (5.5 écrans pour traverser la séquence)
+      section.style.height = "550vh";
+
+      if (particlesContainer) initParticles(particlesContainer, { count: 80 });
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion) {
+        gsap.set(overlay1, { opacity: 1 });
+        gsap.set(overlay2, { opacity: 0 });
+      }
+
+      // Champ magnétique sur les lettres du H1 — chaque ligne est splittée séparément pour
+      // préserver la structure 2-lignes du markup (pas de coupure mid-mot d'« audacieux »).
+      const h1 = document.querySelector<HTMLElement>(".hero-h1");
+      if (h1 && !prefersReducedMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        const lineSpans = h1.querySelectorAll<HTMLElement>(".block");
+        const letters = Array.from(lineSpans).flatMap((line) => splitText(line, "letters"));
+        const radius = 120; // rayon d'influence en px
+        const maxAmp = 4;   // amplitude max en px
+
+        // Cache l'origine de chaque lettre une seule fois (positions DOM, recalculées au resize)
+        type LetterOrigin = { el: HTMLElement; cx: number; cy: number; tx: any; ty: any };
+        let origins: LetterOrigin[] = [];
+        const computeOrigins = () => {
+          origins = letters.map((el) => {
+            const r = el.getBoundingClientRect();
+            return {
+              el,
+              cx: r.left + r.width / 2,
+              cy: r.top + r.height / 2,
+              tx: gsap.quickTo(el, "x", { duration: 0.5, ease: "power2.out" }),
+              ty: gsap.quickTo(el, "y", { duration: 0.5, ease: "power2.out" }),
+            };
+          });
+        };
+        computeOrigins();
+        window.addEventListener("resize", computeOrigins);
+
+        let mx = -1e6, my = -1e6;
+        window.addEventListener("mousemove", (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
+
+        gsap.ticker.add(() => {
+          for (const o of origins) {
+            const dx = mx - o.cx;
+            const dy = my - o.cy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < radius) {
+              const k = (1 - dist / radius) * maxAmp;
+              o.tx((dx / dist) * k);
+              o.ty((dy / dist) * k);
+            } else {
+              o.tx(0);
+              o.ty(0);
+            }
+          }
+        });
+      }
+
+      // Pilote la séquence + les overlays via la progression du scroll
+      initScrollSequence({
+        canvas,
+        section,
+        framePath: heroFramePath,
+        frameCount: HERO_FRAME_COUNT,
+        loaderEl: loader,
+        progressEl: progress,
+        onProgress: (p) => {
+          // Canvas : invisible jusqu'à 0.10 → fade-in vers full à 0.30 → hold → fondu noir 0.88 → 1.0.
+          // Fondu cinématographique vers le noir en fin de section pour enchaîner
+          // proprement avec le fade-in du ScrollVideo (crossfade via noir pur).
+          let cOpacity = 0;
+          if (p < 0.10) cOpacity = 0;
+          else if (p < 0.30) cOpacity = (p - 0.10) / 0.20;
+          else if (p < 0.88) cOpacity = 1;
+          else cOpacity = 1 - (p - 0.88) / 0.12;
+          canvas.style.opacity = String(Math.max(0, Math.min(1, cOpacity)));
+
+          // Phase 1 : titre fade out — démarre seulement quand le canvas commence à apparaître
+          // (entre 0.10 et 0.40), pour qu'il y ait un léger crossfade titre → vidéo.
+          let o1 = 1;
+          if (p < 0.10) o1 = 1;
+          else if (p < 0.40) o1 = 1 - (p - 0.10) / 0.30;
+          else o1 = 0;
+          gsap.set(overlay1, { opacity: o1, y: -50 * (1 - o1), scale: 1 - 0.05 * (1 - o1) });
+
+          // Phase 2 : citation héritage (fade in 0.45 → 0.65, hold 0.65 → 0.92, fade out 0.92 → 1)
+          let o2 = 0;
+          if (p >= 0.45 && p < 0.65) o2 = (p - 0.45) / 0.20;
+          else if (p >= 0.65 && p < 0.92) o2 = 1;
+          else if (p >= 0.92) o2 = 1 - (p - 0.92) / 0.08;
+          o2 = gsap.utils.clamp(0, 1, o2);
+          gsap.set(overlay2, { opacity: o2, y: (1 - o2) * 80 - (p > 0.92 ? 50 * (p - 0.92) / 0.08 : 0), scale: 0.95 + 0.05 * o2 });
+        },
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .hero-scroll-section h1,
+  .hero-scroll-section h2 {
+    font-weight: 300;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+</style>

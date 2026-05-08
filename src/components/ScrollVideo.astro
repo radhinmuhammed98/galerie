@@ -1,0 +1,130 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+---
+
+<section class="scroll-video-section relative bg-noir-orfevre" id="savoir-faire">
+  <!-- Conteneur sticky : le canvas reste fixé pendant que la section défile -->
+  <div class="scroll-video-pin sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+
+    <!-- Particules dorées 3D -->
+    <div id="scroll-video-particles" class="absolute inset-0 z-[2] pointer-events-none opacity-40 mix-blend-screen"></div>
+
+    <!-- Canvas image-sequence — ratio 16:9 source 1280×720, grand format.
+         Démarre INVISIBLE (opacity 0) pour enchaîner depuis le fondu noir du Hero ;
+         se révèle progressivement sur les 10 premiers % du scroll. -->
+    <canvas
+      id="scroll-video-canvas"
+      class="absolute aspect-[16/9] w-[min(96vw,170vh)] max-h-[95vh] z-0 rounded-lg shadow-2xl border border-ivoire/10"
+      style="opacity: 0;"
+    ></canvas>
+
+    <!-- Loader -->
+    <div id="scroll-video-loader" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-[4] text-ivoire/50 text-xs font-sans tracking-[0.3em] uppercase">
+      <span id="scroll-video-progress">0</span>%
+    </div>
+
+    <!-- OVERLAY 1 : Savoir-faire intro -->
+    <!-- Pas de max-w-* sur le wrapper : avec absolute + inset-0, max-width casse le centrage. -->
+    <div class="scroll-video-overlay-1 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none">
+      <h2 class="text-ivoire text-4xl md:text-7xl font-serif text-center max-w-4xl leading-tight px-4 select-none">
+        {t['savoir.text']}
+      </h2>
+    </div>
+
+    <!-- OVERLAY 2 : Citation -->
+    <div class="scroll-video-overlay-2 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none opacity-0">
+      <h2 class="text-ivoire text-4xl md:text-7xl font-serif text-center max-w-4xl leading-tight px-4 select-none">
+        {t['quote.text']}
+      </h2>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  import { gsap } from "../lib/gsap-config";
+  import { initScrollSequence } from "../lib/scroll-sequence";
+  import { initParticles } from "./ParticlesBackground";
+
+  const SAVOIR_FRAME_COUNT = 100;
+  const savoirFramePath = (i: number) =>
+    `/images/sequence/savoirfaire/frame_${String(i + 1).padStart(3, "0")}.webp`;
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const canvas = document.getElementById("scroll-video-canvas") as HTMLCanvasElement | null;
+      const section = document.querySelector(".scroll-video-section") as HTMLElement | null;
+      const overlay1 = document.querySelector(".scroll-video-overlay-1") as HTMLElement | null;
+      const overlay2 = document.querySelector(".scroll-video-overlay-2") as HTMLElement | null;
+      const loader = document.getElementById("scroll-video-loader");
+      const progress = document.getElementById("scroll-video-progress");
+      const particlesContainer = document.getElementById("scroll-video-particles");
+
+      if (!canvas || !section || !overlay1 || !overlay2) return;
+
+      section.style.height = "550vh";
+
+      if (particlesContainer) initParticles(particlesContainer, { count: 60 });
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReducedMotion) {
+        gsap.set(overlay1, { opacity: 1 });
+        gsap.set(overlay2, { opacity: 0 });
+      }
+
+      initScrollSequence({
+        canvas,
+        section,
+        framePath: savoirFramePath,
+        frameCount: SAVOIR_FRAME_COUNT,
+        loaderEl: loader,
+        progressEl: progress,
+        onProgress: (p) => {
+          // Canvas fade-in 0 → 0.10 — symétrique au fade-out du Hero (0.85 → 1.0).
+          // Les deux sections partagent bg-noir-orfevre → crossfade noir pur.
+          let cOpacity = 1;
+          if (p < 0.10) cOpacity = p / 0.10;
+          canvas.style.opacity = String(Math.max(0, Math.min(1, cOpacity)));
+
+          // Overlay 1 (savoir-faire) : démarre APRÈS que le canvas soit pleinement visible
+          // pour éviter qu'il flotte sur une image en cours d'apparition.
+          //   Fade in 0.12 → 0.24, hold 0.24 → 0.38, fade out 0.38 → 0.52.
+          let o1 = 0;
+          if (p < 0.12) o1 = 0;
+          else if (p < 0.24) o1 = (p - 0.12) / 0.12;
+          else if (p < 0.38) o1 = 1;
+          else if (p < 0.52) o1 = 1 - (p - 0.38) / 0.14;
+          else o1 = 0;
+          o1 = gsap.utils.clamp(0, 1, o1);
+          gsap.set(overlay1, { opacity: o1, y: -50 * (1 - o1), scale: 1 - 0.05 * (1 - o1) });
+
+          // Overlay 2 (citation) : démarre après le fade-out complet d'overlay-1.
+          //   Fade in 0.58 → 0.70, hold 0.70 → 0.92, fade out 0.92 → 1.0.
+          let o2 = 0;
+          if (p >= 0.58 && p < 0.70) o2 = (p - 0.58) / 0.12;
+          else if (p >= 0.70 && p < 0.92) o2 = 1;
+          else if (p >= 0.92) o2 = 1 - (p - 0.92) / 0.08;
+          o2 = gsap.utils.clamp(0, 1, o2);
+          gsap.set(overlay2, { opacity: o2, y: (1 - o2) * 80 - (p > 0.92 ? 50 * (p - 0.92) / 0.08 : 0), scale: 0.95 + 0.05 * o2 });
+        },
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .scroll-video-section h2 {
+    font-weight: 300;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+</style>

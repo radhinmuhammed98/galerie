@@ -1,0 +1,140 @@
+---
+// Loader d'entrée minimaliste : logo SVG centré + barre de progression dorée + split reveal.
+// Faux temps de chargement (2.4s) pour un effet cinématique, indépendant de la vitesse réelle de la page.
+// Affiché UNIQUEMENT à la première visite de la session (sessionStorage).
+---
+<div id="orfevres-loader" class="loader" aria-hidden="true" data-state="initial">
+  <div class="loader__split loader__split--top"></div>
+  <div class="loader__split loader__split--bottom"></div>
+
+  <div class="loader__content">
+    <!-- Logo wordmark officiel : taille respectée grâce aux dims natives du SVG -->
+    <img src="/wordmark-logo-white.svg" alt="Galerie des Orfèvres" class="loader__logo" />
+
+    <div class="loader__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="loader__bar-fill"></div>
+    </div>
+
+    <div class="loader__pct"><span id="loader-pct">0</span><span class="loader__pct-symbol">%</span></div>
+  </div>
+</div>
+
+<script>
+  import { initLoader } from "./Loader.ts";
+  if (typeof window !== "undefined") initLoader();
+</script>
+
+<style>
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    pointer-events: auto;
+    background: #0A0A0A; /* fallback derrière les panneaux split */
+    /* Fondu final après l'ouverture du rideau */
+    opacity: 1;
+    transition: opacity 0.9s ease;
+  }
+  .loader[data-state="done"]    { pointer-events: none; }
+  .loader[data-state="fadeout"] { opacity: 0; pointer-events: none; }
+
+  /* Deux panneaux noirs qui se séparent horizontalement (ligne de séparation au milieu).
+     Ouverture cinématique très lente, ease "slow-slow" (cubic in-out étiré) façon rideau de théâtre. */
+  .loader__split {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: #0A0A0A;
+    will-change: transform;
+    transform: translateY(0);
+    /* 2.2s + ease "expo in-out" très étiré : départ doux, accélération douce, arrivée douce */
+    transition: transform 2.2s cubic-bezier(0.86, 0, 0.07, 1);
+    /* Petit shadow doré subtil sur la ligne de séparation pour évoquer la lumière qui s'échappe */
+    box-shadow: 0 0 0 0 rgba(212, 184, 134, 0);
+  }
+  .loader__split--top    { top: 0;    box-shadow: 0 1px 24px rgba(212, 184, 134, 0); }
+  .loader__split--bottom { bottom: 0; box-shadow: 0 -1px 24px rgba(212, 184, 134, 0); }
+  /* Phase d'ouverture : panneaux glissent + filet doré apparaît brièvement à la jointure */
+  .loader[data-state="reveal"] .loader__split--top {
+    transform: translateY(-100%);
+    box-shadow: 0 1px 32px rgba(212, 184, 134, 0.35);
+  }
+  .loader[data-state="reveal"] .loader__split--bottom {
+    transform: translateY(100%);
+    box-shadow: 0 -1px 32px rgba(212, 184, 134, 0.35);
+  }
+
+  .loader__content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    color: #F4EFE6;
+    /* Fade rapide (0.28s) pour que le wordmark disparaisse AVANT que le titre du Hero
+       n'apparaisse dans la fente du rideau — évite le chevauchement de deux textes au centre. */
+    transition: opacity 0.28s ease, transform 1.6s cubic-bezier(0.86, 0, 0.07, 1);
+    transform: scale(1);
+  }
+  .loader[data-state="reveal"] .loader__content {
+    opacity: 0;
+    /* Léger upscale subtil sur le contenu pendant l'ouverture, façon "vue qui s'éloigne" */
+    transform: scale(1.04);
+  }
+
+  .loader__logo {
+    /* Largeur cible 320px desktop, dégrade joliment en mobile via clamp */
+    width: clamp(220px, 32vw, 360px);
+    height: auto;
+    display: block;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: loader-logo-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+
+  .loader__bar {
+    width: clamp(180px, 28vw, 280px);
+    height: 1px;
+    background: rgba(244, 239, 230, 0.12);
+    overflow: hidden;
+    opacity: 0;
+    animation: loader-fade-in 0.6s ease 0.5s forwards;
+  }
+  .loader__bar-fill {
+    width: 100%;
+    height: 100%;
+    background: #B8935A;
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  .loader__pct {
+    font-family: "Inter", sans-serif;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: rgba(244, 239, 230, 0.5);
+    opacity: 0;
+    animation: loader-fade-in 0.6s ease 0.7s forwards;
+  }
+  .loader__pct-symbol { margin-left: 1px; }
+
+  @keyframes loader-logo-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes loader-fade-in {
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loader__split { transition: none; }
+    .loader__logo, .loader__bar, .loader__pct {
+      animation: none; opacity: 1; transform: none;
+    }
+  }
+</style>

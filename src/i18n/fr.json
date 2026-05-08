@@ -1,0 +1,22 @@
+{
+  "nav.home": "Accueil",
+  "nav.gallery": "Galerie",
+  "nav.history": "Histoire",
+  "nav.contact": "Contact",
+  "hero.h1": "Un Espace pour l'Art Audacieux et les Nouvelles Idées",
+  "savoir.text": "La Galerie des orfèvres célèbre la brillance d'un savoir-faire rare.",
+  "quote.text": "Chaque exposition est un hommage au savoir-faire éternel.",
+  "heritage.text": "Là où l'art, matériaux et temps deviennent héritage.",
+  "history.h2": "L'histoire de la galerie des orfèvres",
+  "history.text": "Fondée par des artisans passionnés, la galerie des orfèvres présente des créations exceptionnelles. Chaque pièce raconte une histoire de dévouement, de tradition et d'excellence artistique qui s'étend sur les générations.",
+  "stats.exhibitions": "Expositions Annuelles",
+  "stats.projects": "Projets Collaboratifs",
+  "stats.artworks": "Œuvres Exposées",
+  "stats.visitors": "Visiteurs Annuels",
+  "services.auctions": "Ventes aux enchères",
+  "services.consulting": "Conseils d'Experts",
+  "services.exhibitions": "Expositions Organisées",
+  "footer.address": "23 PLACE DAUPHINE, PARIS",
+  "footer.hours": "Tous les jours 10h–18h",
+  "footer.email": "info@ruellanauction.com"
+}

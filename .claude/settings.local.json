@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($timestamp = Get-Date -Format \"yyyyMMdd-HHmm\"; $src = \"C:\\\\Users\\\\Shadow\\\\Documents\\\\galerie-orfevres-backup-20260507-2350\"; $dst = \"C:\\\\Users\\\\Shadow\\\\Documents\\\\galerie-orfevres-backup-polish-$timestamp\"; Write-Output \"Source: $src\"; Write-Output \"Destination: $dst\"; if \\(Test-Path $dst\\) { Write-Output \"Le dossier de backup existe deja, on l'utilise.\" } else { Copy-Item -Path $src -Destination $dst -Recurse -Exclude @\\('node_modules','dist','.astro'\\) -Force; Write-Output \"Backup cree.\" }; Get-ChildItem $dst | Select-Object Name | Format-Table -AutoSize)"
+    ]
+  }
+}

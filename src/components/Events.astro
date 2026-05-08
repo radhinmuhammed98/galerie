@@ -1,0 +1,168 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+
+const eventsData = {
+  fr: [
+    { title: "Exposition Annuelle des Artistes Locaux", date: "En cours",           image: "/images/about/image_10.jpg", tag: "Exposition" },
+    { title: "L'Or Ancien",                             date: "12 Nov – 30 Déc",   image: "/images/about/image_11.jpg", tag: "Collection" },
+    { title: "Éclats Contemporains",                    date: "15 Jan – 28 Fév",   image: "/images/about/image_12.jpg", tag: "Exposition" },
+    { title: "Matière & Temps",                         date: "10 Mar – 05 Mai",   image: "/images/about/image_13.jpg", tag: "Vente aux enchères" },
+    { title: "Héritage Joaillier",                      date: "20 Mai – 15 Juil",  image: "/images/about/image_14.jpg", tag: "Exposition" },
+  ],
+  en: [
+    { title: "Annual Exhibition of Local Artists",      date: "Ongoing",            image: "/images/about/image_10.jpg", tag: "Exhibition" },
+    { title: "Ancient Gold",                            date: "12 Nov – 30 Dec",   image: "/images/about/image_11.jpg", tag: "Collection" },
+    { title: "Contemporary Flashes",                    date: "15 Jan – 28 Feb",   image: "/images/about/image_12.jpg", tag: "Exhibition" },
+    { title: "Matter & Time",                           date: "10 Mar – 05 May",   image: "/images/about/image_13.jpg", tag: "Auction" },
+    { title: "Jewelry Heritage",                        date: "20 May – 15 Jul",   image: "/images/about/image_14.jpg", tag: "Exhibition" },
+  ],
+};
+const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
+---
+
+<section class="py-32 bg-noir-orfevre text-ivoire overflow-hidden relative" id="events">
+  <div class="px-6 md:px-12 mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <h2 class="text-4xl md:text-5xl font-serif lowercase tracking-tight" data-text-reveal="words" data-text-reveal-start="top 85%">Expositions</h2>
+    <!-- Indicateurs de pages : un losange par exposition, le courant est plein, les autres en outline -->
+    <div class="events-indicators hidden md:flex gap-3" aria-hidden="true">
+      {events.map((_, i) => (
+        <span class={`events-indicator ${i === 0 ? 'is-active' : ''}`} data-index={i}></span>
+      ))}
+    </div>
+  </div>
+
+  <!-- Conteneur de scroll horizontal piloté par le scroll vertical (GSAP) -->
+  <div class="events-scroll-container flex gap-8 px-6 md:px-12 w-[max-content]" data-cursor="drag" data-cursor-label="Glisser">
+    {events.map((evt) => (
+      <div class="events-card w-[80vw] md:w-[40vw] flex-shrink-0 group cursor-pointer">
+        <div class="aspect-[16/9] w-full overflow-hidden bg-gris-pierre relative mb-6">
+          <img src={evt.image} alt={evt.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+          <div class="absolute inset-0 bg-noir-orfevre/20 group-hover:bg-transparent transition-colors duration-500"></div>
+          <!-- Tag badge -->
+          {evt.tag && (
+            <span class="absolute top-4 left-4 font-sans text-[10px] uppercase tracking-[0.25em] px-3 py-1 bg-noir-orfevre/70 text-or-fonce border border-or-fonce/30 backdrop-blur-sm">
+              {evt.tag}
+            </span>
+          )}
+          <!-- Indicateur "En cours / Ongoing" -->
+          {(evt.date === 'En cours' || evt.date === 'Ongoing') && (
+            <span class="absolute top-4 right-4 flex items-center gap-1.5 font-sans text-[10px] uppercase tracking-[0.2em] text-ivoire">
+              <span class="w-1.5 h-1.5 rounded-full bg-or-fonce animate-pulse"></span>
+              {evt.date}
+            </span>
+          )}
+        </div>
+        <div class="flex justify-between items-end border-b border-gris-pierre pb-4">
+          <h3 class="text-2xl font-serif">{evt.title}</h3>
+          {evt.date !== 'En cours' && evt.date !== 'Ongoing' && (
+            <span class="text-xs font-sans tracking-widest text-or-fonce uppercase">{evt.date}</span>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduced) return;
+
+      const container = document.querySelector<HTMLElement>(".events-scroll-container");
+      const trigger = document.getElementById("events");
+      const cards = document.querySelectorAll<HTMLElement>(".events-card");
+      const indicators = document.querySelectorAll<HTMLElement>(".events-indicator");
+      if (!container || !trigger || !cards.length) return;
+
+      const mm = gsap.matchMedia();
+      mm.add("(min-width: 768px)", () => {
+        const distance = () => container.scrollWidth - window.innerWidth;
+        if (distance() <= 0) return;
+
+        // 1. Scroll horizontal piloté par le scroll vertical (pin)
+        const tween = gsap.to(container, {
+          x: () => -distance(),
+          ease: "none",
+          scrollTrigger: {
+            trigger,
+            start: "center center",
+            end: () => `+=${distance()}`,
+            pin: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              // 2. Indicateurs : un losange "actif" par index courant
+              const idx = Math.min(cards.length - 1, Math.floor(self.progress * cards.length + 0.0001));
+              indicators.forEach((dot, i) => {
+                dot.classList.toggle("is-active", i === idx);
+              });
+            },
+          },
+        });
+
+        // 3. Rotation des cards basée sur la vélocité du scrub (max 2°)
+        // Plus on scrolle vite, plus les cards inclinent légèrement — effet "matière"
+        let lastScroll = window.scrollY;
+        let lastT = performance.now();
+        const onScrollVelocity = () => {
+          const now = performance.now();
+          const dt = Math.max(1, now - lastT);
+          const dy = window.scrollY - lastScroll;
+          const velocity = dy / dt; // px/ms
+          lastT = now;
+          lastScroll = window.scrollY;
+
+          // Mappe vélocité [-3..+3 px/ms] → [-2..+2 deg]
+          const rot = gsap.utils.clamp(-2, 2, velocity * 0.7);
+          cards.forEach((c, i) => {
+            // Stagger doux : cards alternent légèrement (i % 2 inverse le sens)
+            const sign = i % 2 === 0 ? 1 : -1;
+            gsap.to(c, { rotation: rot * sign, duration: 0.35, ease: "power2.out", overwrite: "auto" });
+          });
+        };
+        window.addEventListener("scroll", onScrollVelocity, { passive: true });
+
+        return () => {
+          tween.scrollTrigger?.kill();
+          tween.kill();
+          window.removeEventListener("scroll", onScrollVelocity);
+        };
+      });
+
+      void ScrollTrigger;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .events-card { will-change: transform; }
+
+  /* Indicateurs : losanges or-fonce, le courant est plein, les autres en outline */
+  .events-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    border: 1px solid #B8935A;
+    background: transparent;
+    transition: background 0.4s ease, transform 0.4s ease;
+    will-change: background;
+  }
+  .events-indicator.is-active {
+    background: #B8935A;
+    transform: rotate(45deg) scale(1.15);
+  }
+</style>

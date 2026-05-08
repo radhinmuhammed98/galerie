@@ -1,0 +1,200 @@
+---
+// Section diptyque cinématographique : 2 vidéos côte à côte (canvas image-sequence)
+// scrubbed en synchro via UN SEUL ScrollTrigger.
+// Layout : split 50/50 desktop, stack vertical mobile (< 768px).
+
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+
+// Textes du diptyque (FR par défaut, EN si lang === 'en')
+const titleText = lang === 'en' ? "Two gazes, a single quest." : "Deux regards, une même quête.";
+const overlay1 = lang === 'en' ? "Light and shadow."        : "Le clair et l'obscur.";
+const overlay2 = lang === 'en' ? "Tradition and modernity." : "Tradition et modernité.";
+const overlay3 = lang === 'en' ? "Two hands, one vision."   : "Deux mains, une vision.";
+---
+
+<section class="diptyque-section relative bg-noir-orfevre" id="diptyque">
+  <div class="diptyque-pin sticky top-0 h-screen w-full overflow-hidden">
+
+    <!-- Titre H2 sticky en overlay haut -->
+    <div class="absolute top-12 left-0 right-0 z-10 text-center pointer-events-none">
+      <h2
+        class="diptyque-title text-ivoire text-3xl md:text-5xl font-serif tracking-wide opacity-0 px-6"
+        data-diptyque-title
+      >
+        {titleText}
+      </h2>
+    </div>
+
+    <!-- Container split desktop / stack mobile -->
+    <div class="absolute inset-0 flex flex-col md:flex-row">
+
+      <!-- Vidéo gauche -->
+      <div class="diptyque-pane relative w-full h-1/2 md:w-1/2 md:h-full overflow-hidden">
+        <canvas id="diptyque-canvas-left" class="w-full h-full block"></canvas>
+        <!-- Vignette dégradée sur le bord extérieur (gauche) -->
+        <div class="absolute inset-0 pointer-events-none"
+             style="background: linear-gradient(to right, rgba(10,10,10,0.55) 0%, transparent 28%);"></div>
+      </div>
+
+      <!-- Vidéo droite -->
+      <div class="diptyque-pane relative w-full h-1/2 md:w-1/2 md:h-full overflow-hidden">
+        <canvas id="diptyque-canvas-right" class="w-full h-full block"></canvas>
+        <div class="absolute inset-0 pointer-events-none"
+             style="background: linear-gradient(to left, rgba(10,10,10,0.55) 0%, transparent 28%);"></div>
+      </div>
+    </div>
+
+    <!-- Séparateur or-fonce (vertical desktop, horizontal mobile) -->
+    <div class="diptyque-divider absolute pointer-events-none" aria-hidden="true"></div>
+
+    <!-- Overlays textuels centrés sur la jonction (3 phases au scroll) -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20 px-6">
+      <span data-diptyque-overlay="0"
+            class="diptyque-overlay opacity-0 absolute font-serif italic text-2xl md:text-4xl text-ivoire text-center max-w-3xl">
+        {overlay1}
+      </span>
+      <span data-diptyque-overlay="1"
+            class="diptyque-overlay opacity-0 absolute font-serif italic text-2xl md:text-4xl text-ivoire text-center max-w-3xl">
+        {overlay2}
+      </span>
+      <span data-diptyque-overlay="2"
+            class="diptyque-overlay opacity-0 absolute font-serif italic text-2xl md:text-4xl text-ivoire text-center max-w-3xl">
+        {overlay3}
+      </span>
+    </div>
+
+    <!-- Loader unique pour les 2 séquences -->
+    <div id="diptyque-loader"
+         class="absolute bottom-8 left-1/2 -translate-x-1/2 z-[30] text-ivoire/50 text-xs font-sans tracking-[0.3em] uppercase">
+      <span id="diptyque-progress">0</span>%
+    </div>
+
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
+  import { initDiptyqueSequence } from "../lib/diptyque-sequence";
+
+  const FRAME_COUNT = 100;
+  const framePathLeft  = (i: number) => `/images/sequence-diptyque-left/frame_${String(i + 1).padStart(3, "0")}.webp`;
+  const framePathRight = (i: number) => `/images/sequence-diptyque-right/frame_${String(i + 1).padStart(3, "0")}.webp`;
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const canvasLeft  = document.getElementById("diptyque-canvas-left")  as HTMLCanvasElement | null;
+      const canvasRight = document.getElementById("diptyque-canvas-right") as HTMLCanvasElement | null;
+      const section = document.querySelector(".diptyque-section") as HTMLElement | null;
+      const titleEl = document.querySelector<HTMLElement>("[data-diptyque-title]");
+      const overlays = document.querySelectorAll<HTMLElement>("[data-diptyque-overlay]");
+      const loader = document.getElementById("diptyque-loader");
+      const progress = document.getElementById("diptyque-progress");
+
+      if (!canvasLeft || !canvasRight || !section) return;
+
+      // 400vh : 4 écrans de scroll, beaucoup plus contemplatif
+      section.style.height = "400vh";
+
+      // Fade-in du titre dès l'entrée dans la section
+      if (titleEl) {
+        gsap.to(titleEl, {
+          opacity: 1,
+          y: 0,
+          duration: 1.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 75%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      }
+
+      initDiptyqueSequence({
+        canvasLeft,
+        canvasRight,
+        section,
+        framePathLeft,
+        framePathRight,
+        frameCount: FRAME_COUNT,
+        loaderEl: loader,
+        progressEl: progress,
+        onProgress: (p) => {
+          // 3 overlays qui apparaissent successivement aux 3 quartiers de la section
+          const ranges: Array<[number, number, number]> = [
+            // [start, full, end] : fade-in à start, hold jusqu'à fin du peak, fade-out
+            [0.10, 0.27, 0.32],
+            [0.40, 0.55, 0.62],
+            [0.70, 0.85, 0.92],
+          ];
+          overlays.forEach((el, i) => {
+            const range = ranges[i];
+            if (!range) return;
+            const [s, peak, e] = range;
+            let opacity = 0;
+            if (p >= s && p < peak) opacity = (p - s) / (peak - s);
+            else if (p >= peak && p < e) opacity = 1 - (p - peak) / (e - peak);
+            opacity = Math.max(0, Math.min(1, opacity));
+            // y subtil pour accompagner le fade
+            const y = (1 - opacity) * 12;
+            el.style.opacity = String(opacity);
+            el.style.transform = `translateY(${y}px)`;
+          });
+        },
+      });
+
+      void ScrollTrigger;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .diptyque-title {
+    font-weight: 300;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    transform: translateY(8px);
+    will-change: opacity, transform;
+  }
+
+  .diptyque-overlay {
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.85);
+    will-change: opacity, transform;
+    transform: translateY(12px);
+  }
+
+  /* Séparateur or-fonce : vertical desktop, horizontal mobile */
+  .diptyque-divider {
+    background: rgba(184, 147, 90, 0.35);
+    /* Mobile : ligne horizontale au milieu */
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+  }
+  @media (min-width: 768px) {
+    .diptyque-divider {
+      /* Desktop : ligne verticale au milieu */
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: 1px;
+      height: auto;
+      transform: translateX(-0.5px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .diptyque-title, .diptyque-overlay { transition: none; }
+  }
+</style>

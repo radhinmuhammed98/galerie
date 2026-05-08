@@ -1,0 +1,91 @@
+---
+// Séparateur visuel entre les grandes sections : filament doré + losange central.
+// Tracé au scroll via stroke-dashoffset (pas de plugin payant).
+// Variants : "ivory" (sur fond clair) ou "noir" (sur fond sombre, défaut)
+interface Props {
+  variant?: "noir" | "ivory";
+  className?: string;
+}
+const { variant = "noir", className = "" } = Astro.props;
+const lineColor = variant === "ivory" ? "#B8935A" : "#B8935A";
+const diamondColor = variant === "ivory" ? "#B8935A" : "#D4B886";
+---
+
+<div class={`section-divider relative w-full flex items-center justify-center py-16 ${className}`} data-divider>
+  <svg
+    viewBox="0 0 600 12"
+    width="60%"
+    height="12"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    class="overflow-visible max-w-2xl"
+  >
+    <!-- Ligne fine, tracée de gauche à droite -->
+    <line
+      x1="0" y1="6" x2="600" y2="6"
+      stroke={lineColor}
+      stroke-width="1"
+      stroke-linecap="round"
+      class="section-divider__line"
+      vector-effect="non-scaling-stroke"
+    />
+    <!-- Losange au centre, apparaît avec fade + scale après le tracé -->
+    <g class="section-divider__diamond" transform="translate(300, 6)" opacity="0">
+      <rect x="-3" y="-3" width="6" height="6" fill={diamondColor} transform="rotate(45)" />
+    </g>
+  </svg>
+</div>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
+  import { drawSVG } from "../lib/svg-draw";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const dividers = document.querySelectorAll<HTMLElement>("[data-divider]");
+      dividers.forEach((divider) => {
+        const line = divider.querySelector<SVGGeometryElement>(".section-divider__line");
+        const diamond = divider.querySelector<SVGGElement>(".section-divider__diamond");
+        if (!line) return;
+
+        // Trace la ligne au scroll
+        drawSVG(line, {
+          duration: 1.5,
+          ease: "power3.out",
+          scrollTrigger: { trigger: divider, start: "top 80%", once: true },
+        });
+
+        // Apparition du losange juste après le milieu du tracé
+        if (diamond) {
+          gsap.fromTo(
+            diamond,
+            { opacity: 0, scale: 0.4, transformOrigin: "center" },
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 0.8,
+              delay: 0.7,
+              ease: "back.out(2)",
+              scrollTrigger: { trigger: divider, start: "top 80%", once: true },
+            }
+          );
+        }
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+    void ScrollTrigger;
+  }
+</script>
+
+<style>
+  .section-divider__line { will-change: stroke-dashoffset; }
+  @media (prefers-reduced-motion: reduce) {
+    .section-divider__line { stroke-dashoffset: 0 !important; }
+    .section-divider__diamond { opacity: 1 !important; }
+  }
+</style>

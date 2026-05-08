@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Hero from '../../components/Hero.astro';
+import ScrollVideo from '../../components/ScrollVideo.astro';
+import Gallery from '../../components/Gallery.astro';
+import Events from '../../components/Events.astro';
+import History from '../../components/History.astro';
+import Stats from '../../components/Stats.astro';
+import Services from '../../components/Services.astro';
+import ScrollDiptyque from '../../components/ScrollDiptyque.astro';
+import MonogramSection from '../../components/MonogramSection.astro';
+import ContactCTA from '../../components/ContactCTA.astro';
+import Footer from '../../components/Footer.astro';
+import SectionDivider from '../../components/SectionDivider.astro';
+---
+
+<BaseLayout title="Galerie des Orfèvres | Parisian Art Gallery" lang="en">
+  <Navigation lang="en" />
+
+  <main>
+    <Hero lang="en" />
+    <ScrollVideo lang="en" />
+
+    <SectionDivider variant="ivory" className="bg-ivoire" />
+    <Gallery lang="en" />
+
+    <Events lang="en" />
+
+    <SectionDivider variant="ivory" className="bg-ivoire" />
+    <History lang="en" />
+
+    <Stats lang="en" />
+    <Services lang="en" />
+
+    <!-- Cinematic diptych : 2 videos side by side, scrubbed in sync -->
+    <ScrollDiptyque lang="en" />
+
+    <!-- Monogram GO section with floating artworks -->
+    <MonogramSection lang="en" />
+
+    <!-- Contact CTA section -->
+    <ContactCTA lang="en" />
+  </main>
+
+  <Footer lang="en" />
+</BaseLayout>

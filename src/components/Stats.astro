@@ -1,0 +1,94 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+
+const stats = [
+  { value: 75,  label: t['stats.exhibitions'], suffix: '+' },
+  { value: 300, label: t['stats.projects'],    suffix: '+' },
+  { value: 300, label: t['stats.artworks'],    suffix: '+' },
+  { value: 30,  label: t['stats.visitors'],    suffix: 'K+' }
+];
+---
+
+<section class="py-32 bg-gris-pierre text-ivoire border-y border-noir-orfevre" id="stats">
+  <div class="max-w-7xl mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+      {stats.map((stat) => (
+        <div class="stat-item">
+          <div class="text-5xl md:text-6xl font-serif text-or-fonce mb-3 flex justify-center items-baseline">
+            <span class="stat-number" data-target={stat.value}>0</span>
+            <span class="text-3xl ml-1 stat-suffix">{stat.suffix}</span>
+          </div>
+          <!-- Filament doré sous chaque chiffre, tracé au scroll -->
+          <svg
+            viewBox="0 0 80 2"
+            preserveAspectRatio="none"
+            width="60"
+            height="2"
+            class="stat-underline mx-auto mb-3 overflow-visible"
+            aria-hidden="true"
+          >
+            <line x1="0" y1="1" x2="80" y2="1" stroke="#B8935A" stroke-width="0.7" vector-effect="non-scaling-stroke" />
+          </svg>
+          <div class="font-sans text-xs uppercase tracking-widest text-gray-400">
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
+  import { drawSVGStagger } from "../lib/svg-draw";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      // Compteur numérique : tween d'un proxy { value }, pas de innerHTML fragile
+      document.querySelectorAll<HTMLElement>(".stat-number").forEach((el) => {
+        const target = parseFloat(el.getAttribute("data-target") || "0");
+        const proxy = { value: 0 };
+        ScrollTrigger.create({
+          trigger: el,
+          start: "top 85%",
+          once: true,
+          onEnter: () => {
+            gsap.to(proxy, {
+              value: target,
+              duration: 2,
+              ease: "power2.out",
+              onUpdate: () => { el.textContent = Math.floor(proxy.value).toString(); },
+              onComplete: () => { el.textContent = target.toString(); },
+            });
+          },
+        });
+      });
+
+      // Tracé des filaments dorés sous chaque chiffre, en stagger
+      const lines = document.querySelectorAll<SVGGeometryElement>(".stat-underline line");
+      if (lines.length) {
+        drawSVGStagger(lines, {
+          duration: 1.4,
+          ease: "power3.out",
+          stagger: 0.2,
+          scrollTrigger: { trigger: "#stats", start: "top 80%", once: true },
+        });
+      }
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .stat-suffix { font-weight: 300; }
+  .stat-underline line { will-change: stroke-dashoffset; }
+</style>

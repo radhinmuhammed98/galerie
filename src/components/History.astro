@@ -1,0 +1,96 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+---
+
+<section class="py-32 px-6 md:px-12 bg-ivoire text-noir-orfevre relative" id="history">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+
+    <div class="md:col-span-5 relative group history-img-container">
+      <div class="aspect-[3/4] w-full overflow-hidden">
+        <img
+          src="/images/about/image_14.jpg"
+          alt="Histoire de la galerie"
+          class="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 history-img"
+          loading="lazy"
+        />
+      </div>
+      <div class="absolute -bottom-6 -right-6 w-32 h-32 border-b border-r border-or-fonce opacity-50"></div>
+    </div>
+
+    <div class="md:col-span-6 md:col-start-7 history-text-container">
+      <h2 class="history-h2 text-4xl md:text-5xl font-serif mb-8 leading-tight">
+        {t['history.h2']}
+      </h2>
+      <p class="history-paragraph font-sans text-lg leading-relaxed text-gray-700">
+        {t['history.text']}
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  import { ScrollTrigger } from "../lib/gsap-config";
+  import { revealText } from "../lib/text-reveal";
+  import { revealImage } from "../lib/image-reveal";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      // 1. Curtain reveal vertical sur l'image (descend de haut en bas)
+      const imgContainer = document.querySelector<HTMLElement>(".history-img-container .aspect-\\[3\\/4\\]");
+      const img = document.querySelector<HTMLElement>(".history-img");
+      if (imgContainer && img) {
+        revealImage(
+          imgContainer,
+          {
+            direction: "curtain-top",
+            duration: 1.4,
+            coverColor: "#F4EFE6",
+            scaleFrom: 1.04,
+            scaleDuration: 1.6,
+            scrollTrigger: { start: "top 75%", once: true },
+          },
+          img
+        );
+      }
+
+      // 2. Split text H2 (mots, blur)
+      const h2 = document.querySelector<HTMLElement>(".history-h2");
+      if (h2) {
+        revealText(h2, {
+          mode: "words",
+          stagger: 0.06,
+          duration: 1.1,
+          delay: 0.3,
+          scrollTrigger: { start: "top 80%", once: true },
+        });
+      }
+
+      // 3. Paragraphe : split par mots, plus rapide, encore plus subtil
+      const p = document.querySelector<HTMLElement>(".history-paragraph");
+      if (p) {
+        revealText(p, {
+          mode: "words",
+          stagger: 0.025,
+          duration: 0.8,
+          yPercent: 60,
+          blurPx: 6,
+          delay: 0.5,
+          scrollTrigger: { start: "top 80%", once: true },
+        });
+      }
+
+      void ScrollTrigger;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>

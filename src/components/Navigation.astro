@@ -1,0 +1,74 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+const basePath = lang === 'en' ? '/en' : '/fr';
+---
+
+<nav id="main-nav" class="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center font-sans text-sm uppercase tracking-widest text-ivoire transition-all duration-500">
+  <a
+    href={basePath}
+    class="link-fancy"
+    data-cursor="link"
+    data-magnetic
+    data-magnetic-radius="100"
+    data-magnetic-amp="8"
+    data-magnetic-inner="img"
+    data-magnetic-inner-amp="4"
+    aria-label="Accueil"
+  >
+    <img src="/wordmark-logo-white.svg" alt="Galerie des Orfèvres" class="h-8 w-auto block" id="nav-logo" />
+  </a>
+
+  <div class="hidden md:flex items-center gap-12">
+    <a href={`${basePath}#gallery`} class="link-fancy hover:text-or-fonce transition-colors">{t['nav.gallery']}</a>
+    <a href={`${basePath}#history`} class="link-fancy hover:text-or-fonce transition-colors">{t['nav.history']}</a>
+    <a href={`${basePath}#contact`} class="link-fancy hover:text-or-fonce transition-colors">{t['nav.contact']}</a>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <a href="/fr" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'fr' ? 'text-or-fonce' : ''}`}>FR</a>
+    <span class="opacity-40">/</span>
+    <a href="/en" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'en' ? 'text-or-fonce' : ''}`}>EN</a>
+  </div>
+</nav>
+
+<script>
+  import { gsap } from "../lib/gsap-config";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      // Animation logo : fade-in + léger scale au premier chargement uniquement
+      const logo = document.getElementById("nav-logo");
+      if (!logo) return;
+
+      const alreadySeen = sessionStorage.getItem("orfevres-logo-shown") === "1";
+      if (alreadySeen || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set(logo, { opacity: 1, y: 0 });
+        return;
+      }
+
+      gsap.fromTo(
+        logo,
+        { opacity: 0, y: -8, scale: 0.96 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 1.2,
+          ease: "power3.out",
+          delay: 0.2,
+          onComplete: () => sessionStorage.setItem("orfevres-logo-shown", "1"),
+        }
+      );
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>

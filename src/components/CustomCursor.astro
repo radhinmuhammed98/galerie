@@ -1,0 +1,153 @@
+---
+// Curseur custom contextuel — rendu unique, état piloté en data-attribute par CustomCursor.ts.
+// Le rond utilise mix-blend-mode: difference → affiche les couleurs en négatif
+// (blanc sur fond sombre, sombre sur fond clair, complémentaire sur couleurs).
+// Activé uniquement sur souris fine.
+---
+<div id="custom-cursor" class="cursor-root" data-state="default" data-visible="false" data-pressed="false" aria-hidden="true">
+  <div class="cursor-shape">
+    <svg class="cursor-arrows" viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true">
+      <path d="M22 22 L14 32 L22 42" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M42 22 L50 32 L42 42" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="cursor-label"></span>
+  </div>
+</div>
+
+<script>
+  import { initCustomCursor } from "./CustomCursor.ts";
+  if (typeof window !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => { initCustomCursor(); }, { once: true });
+    } else {
+      initCustomCursor();
+    }
+  }
+</script>
+
+<style>
+  /* Curseur custom : on ne masque le curseur natif que si la souris est vraiment présente */
+  @media (hover: hover) and (pointer: fine) {
+    html.cursor-active,
+    html.cursor-active * { cursor: none !important; }
+  }
+
+  .cursor-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate3d(-50%, -50%, 0);
+    will-change: transform;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .cursor-root[data-visible="true"] { opacity: 1; }
+
+  .cursor-shape {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff; /* base blanche → mix-blend-difference inverse les couleurs sous-jacentes */
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 9999px;
+    width: 6px;
+    height: 6px;
+    /* Couleurs en négatif : tout ce qui passe sous le rond est inversé */
+    mix-blend-mode: difference;
+    /* Toutes les transitions d'état utilisent la même courbe */
+    transition:
+      width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 0.3s ease,
+      border-radius 0.25s ease,
+      border-color 0.25s ease,
+      color 0.3s ease,
+      transform 0.18s ease;
+    will-change: width, height, transform;
+  }
+
+  /* Léger feedback au clic — vaut sur tous les états */
+  .cursor-root[data-pressed="true"] .cursor-shape { transform: scale(0.85); }
+
+  .cursor-label {
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    user-select: none;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+  .cursor-arrows {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  /* État LINK : disque blanc → en négatif, devient l'inverse total du fond */
+  .cursor-root[data-state="link"] .cursor-shape {
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border-color: transparent;
+  }
+
+  /* État IMAGE : cercle moyen avec label centré, fond blanc semi-transparent → inversion partielle */
+  .cursor-root[data-state="image"] .cursor-shape {
+    width: 34px;
+    height: 34px;
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+  .cursor-root[data-state="image"] .cursor-label { opacity: 1; font-size: 10px; }
+
+  /* État TEXT : barre verticale (i-beam élégant) */
+  .cursor-root[data-state="text"] .cursor-shape {
+    width: 1px;
+    height: 20px;
+    border-radius: 0;
+    background: currentColor;
+    border-color: transparent;
+  }
+
+  /* État DRAG : cercle large + flèches gauche/droite, label "Glisser" sous le cercle.
+     Note : pas de backdrop-filter (incompatible avec mix-blend-mode → casse le négatif). */
+  .cursor-root[data-state="drag"] .cursor-shape {
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 255, 255, 0.5);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+  .cursor-root[data-state="drag"] .cursor-arrows { opacity: 0.9; }
+  .cursor-root[data-state="drag"] .cursor-label {
+    opacity: 1;
+    position: absolute;
+    bottom: -22px;
+    font-family: "Inter", sans-serif;
+    font-style: normal;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor-shape { transition: none; }
+    .cursor-root  { transition: none; }
+  }
+
+  /* Caché complètement en mobile / tactile */
+  @media not all and (hover: hover), (pointer: coarse) {
+    .cursor-root { display: none; }
+  }
+</style>

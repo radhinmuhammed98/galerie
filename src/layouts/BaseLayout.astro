@@ -1,0 +1,74 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import CustomCursor from '../components/CustomCursor.astro';
+import ScrollProgress from '../components/ScrollProgress.astro';
+import Loader from '../components/Loader.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: string;
+}
+
+const { title, description = "Galerie des Orfèvres, galerie d'art parisienne.", lang = "fr" } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- View Transitions Astro : fade entre les pages, transitions:persist sur les éléments globaux -->
+    <ClientRouter fallback="animate" />
+  </head>
+  <body class="antialiased selection:bg-or-fonce selection:text-noir-orfevre bg-noir-orfevre text-ivoire">
+    <!-- Loader d'entrée : 1ère visite uniquement, géré par sessionStorage -->
+    <Loader transition:persist />
+
+    <!-- Indicateurs et curseur globaux : persistent entre pages pour éviter le flash -->
+    <ScrollProgress transition:persist />
+    <CustomCursor transition:persist />
+
+    <slot />
+
+    <script>
+      import { initLenis } from '../lib/lenis';
+      import { autoBindTextReveal } from '../lib/text-reveal';
+      import { autoBindMagnetic } from '../lib/magnetic';
+      import { ScrollTrigger } from '../lib/gsap-config';
+
+      // L'init des libs globales doit se relancer après chaque navigation Astro (View Transitions)
+      const bind = () => {
+        autoBindTextReveal();
+        autoBindMagnetic();
+        // Refresh ScrollTrigger : le DOM a changé, les triggers doivent recalculer
+        ScrollTrigger.refresh();
+      };
+
+      // Init Lenis une seule fois (le loader persiste entre pages)
+      if (typeof window !== 'undefined' && !(window as any).__lenis_inited) {
+        const lenis = initLenis();
+        if (lenis) (window as any).lenis = lenis;
+        (window as any).__lenis_inited = true;
+      }
+
+      // Bind initial + à chaque changement de page (Astro emit `astro:page-load`)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bind, { once: true });
+      } else {
+        bind();
+      }
+      document.addEventListener('astro:page-load', bind);
+    </script>
+  </body>
+</html>

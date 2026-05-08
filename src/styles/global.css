@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --color-noir-orfevre: #0A0A0A;
+  --color-ivoire: #F4EFE6;
+  --color-or-fonce: #B8935A;
+  --color-or-clair: #D4B886;
+  --color-gris-pierre: #2A2A2A;
+  --color-blanc-pur: #FFFFFF;
+  --font-serif: "Cormorant Garamond", "Fraunces", serif;
+  --font-sans: "Inter", "Neue Haas Grotesk", sans-serif;
+}
+
+@layer base {
+  :root {
+    --noir-orfevre: #0A0A0A;
+    --ivoire: #F4EFE6;
+    --or-fonce: #B8935A;
+    --or-clair: #D4B886;
+    --gris-pierre: #2A2A2A;
+    --blanc-pur: #FFFFFF;
+  }
+
+  html, body {
+    @apply bg-noir-orfevre text-ivoire font-sans;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight font-light;
+  }
+
+  ::selection {
+    @apply bg-or-fonce text-noir-orfevre;
+  }
+
+  /* Lenis smooth scroll utilities */
+  html.lenis { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-stopped { overflow: hidden; }
+  .lenis.lenis-scrolling iframe { pointer-events: none; }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Underline élégant : trace de gauche à droite au hover, retrace de droite à gauche au sortir */
+  .link-fancy {
+    position: relative;
+    display: inline-block;
+  }
+  .link-fancy::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    pointer-events: none;
+  }
+  .link-fancy:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+  /* Variante or-fonce explicite (à utiliser si la couleur de texte n'est pas désirée pour l'underline) */
+  .link-fancy--gold::after { background: #B8935A; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .link-fancy::after { transition: none; }
+  }
+}

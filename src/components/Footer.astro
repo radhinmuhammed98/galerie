@@ -1,0 +1,177 @@
+---
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+const t = lang === 'en' ? en : fr;
+
+const easterEggLetters = ['O','R','F','È','V','R','E','S'];
+---
+
+<footer class="footer-section bg-noir-orfevre text-ivoire pt-24 pb-16 px-6 md:px-12 border-t border-gris-pierre relative z-10 overflow-hidden" id="contact">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 relative z-[2]">
+    <div>
+      <img src="/wordmark-logo-white.svg" alt="Galerie des Orfèvres" class="h-10 w-auto mb-6" />
+      <p class="font-sans text-sm text-gray-400 max-w-sm">
+        {t['history.text']}
+      </p>
+    </div>
+
+    <div>
+      <h4 class="font-sans text-sm uppercase tracking-widest text-or-fonce mb-6">Contact</h4>
+      <address class="font-sans text-sm not-italic space-y-2">
+        <p>
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=23+Place+Dauphine+Paris"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link-fancy footer-address hover:text-or-fonce transition-colors"
+            style="letter-spacing: 0.2em;"
+          >{t['footer.address']}</a>
+        </p>
+        <p>{t['footer.hours']}</p>
+        <p><a href={`mailto:${t['footer.email']}`} class="link-fancy hover:text-or-fonce transition-colors">{t['footer.email']}</a></p>
+      </address>
+    </div>
+
+    <div>
+      <h4 class="font-sans text-sm uppercase tracking-widest text-or-fonce mb-6">Socials</h4>
+      <div class="flex flex-col gap-2 font-sans text-sm">
+        <a href="https://instagram.com/orfevres_galerie" target="_blank" rel="noopener noreferrer" class="link-fancy hover:text-or-fonce transition-colors w-fit">Instagram</a>
+        <a href="https://linkedin.com/company/galeriedesorfeveres" target="_blank" rel="noopener noreferrer" class="link-fancy hover:text-or-fonce transition-colors w-fit">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Easter egg ORFÈVRES — gravé en énorme, opacity 0.04, perturbation au mousemove -->
+  <div class="footer-easter-egg" aria-hidden="true">
+    {easterEggLetters.map((letter) => (
+      <span class="footer-easter-egg__letter" data-cursor="text">{letter}</span>
+    ))}
+  </div>
+
+  <div class="max-w-7xl mx-auto mt-24 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 font-sans relative z-[2]">
+    <p>&copy; {new Date().getFullYear()} Galerie des Orfèvres. Tous droits réservés.</p>
+  </div>
+</footer>
+
+<script>
+  import { gsap } from "../lib/gsap-config";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const footer = document.querySelector<HTMLElement>(".footer-section");
+      const letters = document.querySelectorAll<HTMLElement>(".footer-easter-egg__letter");
+      if (!footer || !letters.length) return;
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+      // Si reduced-motion ou tactile, on stoppe — l'easter egg reste visible mais inerte
+      if (prefersReducedMotion || !isFinePointer) return;
+
+      const radius = 220;
+      const maxAmp = 18;
+
+      type Origin = { el: HTMLElement; cx: number; cy: number; tx: any; ty: any };
+      let origins: Origin[] = [];
+      const compute = () => {
+        origins = Array.from(letters).map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            el,
+            cx: r.left + r.width / 2,
+            cy: r.top + r.height / 2,
+            tx: gsap.quickTo(el, "x", { duration: 0.6, ease: "power2.out" }),
+            ty: gsap.quickTo(el, "y", { duration: 0.6, ease: "power2.out" }),
+          };
+        });
+      };
+      compute();
+      window.addEventListener("resize", compute);
+
+      // Recalcule au scroll aussi (les lettres bougent dans le viewport)
+      window.addEventListener("scroll", () => { compute(); }, { passive: true });
+
+      let mx = -1e6, my = -1e6;
+      let inside = false;
+      footer.addEventListener("mouseenter", () => { inside = true; });
+      footer.addEventListener("mouseleave", () => {
+        inside = false;
+        // Reset toutes les lettres à 0
+        for (const o of origins) { o.tx(0); o.ty(0); }
+      });
+      footer.addEventListener("mousemove", (e: MouseEvent) => {
+        mx = e.clientX;
+        my = e.clientY;
+      });
+
+      gsap.ticker.add(() => {
+        if (!inside) return;
+        for (const o of origins) {
+          const dx = mx - o.cx;
+          const dy = my - o.cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < radius) {
+            // Plus on est proche, plus la lettre est repoussée (perturbation)
+            const k = (1 - dist / radius) * maxAmp;
+            o.tx((dx / dist) * k);
+            o.ty((dy / dist) * k);
+          } else {
+            o.tx(0);
+            o.ty(0);
+          }
+        }
+      });
+
+      // Hover sur une lettre : illumination subtile
+      letters.forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+          gsap.to(el, { color: "#D4B886", opacity: 0.5, duration: 0.4, ease: "power2.out" });
+        });
+        el.addEventListener("mouseleave", () => {
+          gsap.to(el, { color: "#F4EFE6", opacity: 0.04, duration: 0.6, ease: "power2.out" });
+        });
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else {
+      setup();
+    }
+  }
+</script>
+
+<style>
+  .footer-easter-egg {
+    position: absolute;
+    left: 50%;
+    bottom: -3vh;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.4em;
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 400;
+    font-size: clamp(8rem, 22vw, 24rem);
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    color: #F4EFE6;
+    opacity: 0.04;
+    pointer-events: auto;
+    user-select: none;
+    white-space: nowrap;
+    z-index: 1;
+  }
+  .footer-easter-egg__letter {
+    display: inline-block;
+    will-change: transform, color, opacity;
+    transition: opacity 0.4s ease;
+  }
+  @media (max-width: 768px) {
+    .footer-easter-egg { font-size: 16vw; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .footer-easter-egg__letter { transform: none !important; }
+  }
+</style>
