@@ -68,3 +68,4 @@ src/
 └── styles/           # Styles globaux (global.css)
 ```
 "# galerie-1" 
+"# galerie-1" 
