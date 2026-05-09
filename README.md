@@ -67,3 +67,4 @@ src/
 ├── pages/            # Les pages Astro (/fr, /en)
 └── styles/           # Styles globaux (global.css)
 ```
+"# galerie-1" 
