@@ -24,7 +24,7 @@ const eventsData = {
 const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
 ---
 
-<section class="py-32 bg-noir-orfevre text-ivoire overflow-hidden relative" id="events">
+<section class="py-32 surface-art text-ivoire overflow-hidden relative" id="events">
   <div class="px-6 md:px-12 mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
     <h2 class="text-4xl md:text-5xl font-serif lowercase tracking-tight" data-text-reveal="words" data-text-reveal-start="top 85%">Expositions</h2>
     <!-- Indicateurs de pages : un losange par exposition, le courant est plein, les autres en outline -->
@@ -38,7 +38,7 @@ const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
   <!-- Conteneur de scroll horizontal piloté par le scroll vertical (GSAP) -->
   <div class="events-scroll-container flex gap-8 px-6 md:px-12 w-[max-content]" data-cursor="drag" data-cursor-label="Glisser">
     {events.map((evt) => (
-      <div class="events-card w-[80vw] md:w-[40vw] flex-shrink-0 group cursor-pointer">
+      <a href="#contact-cta" data-scroll-link class="events-card w-[80vw] md:w-[40vw] flex-shrink-0 group cursor-pointer block">
         <div class="aspect-[16/9] w-full overflow-hidden bg-gris-pierre relative mb-6">
           <img src={evt.image} alt={evt.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" loading="lazy" />
           <div class="absolute inset-0 bg-noir-orfevre/20 group-hover:bg-transparent transition-colors duration-500"></div>
@@ -62,7 +62,11 @@ const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
             <span class="text-xs font-sans tracking-widest text-or-fonce uppercase">{evt.date}</span>
           )}
         </div>
-      </div>
+        <div class="events-card__cta mt-5 flex items-center justify-between font-sans text-[10px] uppercase tracking-[0.24em] text-or-clair">
+          <span>{lang === 'en' ? 'Plan a visit' : 'Planifier une visite'}</span>
+          <span aria-hidden="true">+</span>
+        </div>
+      </a>
     ))}
   </div>
 </section>
@@ -148,7 +152,60 @@ const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
 </script>
 
 <style>
-  .events-card { will-change: transform; }
+  .events-card {
+    will-change: transform;
+    position: relative;
+    color: inherit;
+    transition: filter 0.45s ease, opacity 0.45s ease;
+  }
+
+  .events-scroll-container:hover .events-card:not(:hover) {
+    filter: saturate(0.82) brightness(0.82);
+  }
+
+  .events-card__cta {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+
+  .events-card:hover .events-card__cta,
+  .events-card:focus-visible .events-card__cta {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 767px) {
+    #events {
+      padding-block: 5.5rem;
+    }
+
+    .events-scroll-container {
+      width: 100%;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 82vw;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 1rem;
+      scrollbar-width: none;
+    }
+
+    .events-scroll-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .events-card {
+      width: auto;
+      scroll-snap-align: center;
+      padding: 0.7rem;
+      border: 1px solid rgba(244, 239, 230, 0.12);
+      background: rgba(244, 239, 230, 0.045);
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.26);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  }
 
   /* Indicateurs : losanges or-fonce, le courant est plein, les autres en outline */
   .events-indicator {

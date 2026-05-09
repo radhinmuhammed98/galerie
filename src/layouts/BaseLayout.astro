@@ -11,7 +11,7 @@ interface Props {
   lang?: string;
 }
 
-const { title, description = "Galerie des Orfèvres, galerie d'art parisienne.", lang = "fr" } = Astro.props;
+const { title, description = "Galerie des Orfevres, galerie d'art parisienne.", lang = "fr" } = Astro.props;
 ---
 
 <!doctype html>
@@ -28,14 +28,14 @@ const { title, description = "Galerie des Orfèvres, galerie d'art parisienne.",
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
-    <!-- View Transitions Astro : fade entre les pages, transitions:persist sur les éléments globaux -->
+    <!-- View Transitions Astro : fade entre les pages, transitions:persist sur les elements globaux. -->
     <ClientRouter fallback="animate" />
   </head>
   <body class="antialiased selection:bg-or-fonce selection:text-noir-orfevre bg-noir-orfevre text-ivoire">
-    <!-- Loader d'entrée : 1ère visite uniquement, géré par sessionStorage -->
+    <!-- Loader d'entree : minimum 2s sur chaque chargement, puis sortie quand la page est prete. -->
     <Loader transition:persist />
 
-    <!-- Indicateurs et curseur globaux : persistent entre pages pour éviter le flash -->
+    <!-- Indicateurs et curseur globaux : persistent entre pages pour eviter le flash. -->
     <ScrollProgress transition:persist />
     <CustomCursor transition:persist />
 
@@ -47,28 +47,104 @@ const { title, description = "Galerie des Orfèvres, galerie d'art parisienne.",
       import { autoBindMagnetic } from '../lib/magnetic';
       import { ScrollTrigger } from '../lib/gsap-config';
 
-      // L'init des libs globales doit se relancer après chaque navigation Astro (View Transitions)
+      interface OrfevresWindow extends Window {
+        __lenis_inited?: boolean;
+        __orfevres_anchor_bound?: boolean;
+        lenis?: {
+          scrollTo: (target: string | HTMLElement, options?: { offset?: number; duration?: number }) => void;
+        };
+      }
+
+      const appWindow = window as OrfevresWindow;
+
+      const updateDeviceClass = () => {
+        const isMobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+        document.documentElement.classList.toggle("is-mobile-device", isMobile);
+        document.documentElement.dataset.device = isMobile ? "mobile" : "desktop";
+      };
+
+      const scrollToHash = (hash: string) => {
+        const id = decodeURIComponent(hash.replace(/^#/, ""));
+        if (!id) return false;
+
+        const destination = document.getElementById(id);
+        if (!destination) return false;
+
+        const navOffset = document.documentElement.classList.contains("is-mobile-device") ? -96 : -44;
+        if (appWindow.lenis) {
+          appWindow.lenis.scrollTo(destination, { offset: navOffset, duration: 1.15 });
+        } else {
+          const top = destination.getBoundingClientRect().top + window.scrollY + navOffset;
+          window.scrollTo({ top, behavior: "smooth" });
+        }
+        return true;
+      };
+
+      const bindAnchors = () => {
+        if (appWindow.__orfevres_anchor_bound) return;
+        appWindow.__orfevres_anchor_bound = true;
+
+        document.addEventListener("click", (event) => {
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+
+          const link = target.closest<HTMLAnchorElement>("a[href]");
+          if (!link) return;
+          if (link.target || link.hasAttribute("download")) return;
+
+          const rawHref = link.getAttribute("href") ?? "";
+          if (rawHref.startsWith("mailto:") || rawHref.startsWith("tel:")) return;
+
+          const url = new URL(link.href);
+          if (url.origin !== window.location.origin) return;
+
+          const languageTarget = link.dataset.languageSwitch;
+          if (languageTarget !== undefined) {
+            event.preventDefault();
+            const targetPath = link.dataset.langTarget === "en" ? "/en/" : "/fr/";
+            window.location.href = window.location.hash ? `${targetPath}${window.location.hash}` : link.href;
+            return;
+          }
+
+          if (!url.hash) return;
+
+          const currentPath = window.location.pathname.replace(/\/$/, "");
+          const linkPath = url.pathname.replace(/\/$/, "");
+          if (linkPath !== currentPath) {
+            window.location.href = link.href;
+            return;
+          }
+
+          event.preventDefault();
+          history.pushState(null, "", url.hash);
+          scrollToHash(url.hash);
+        }, { capture: true });
+      };
+
+      // L'init des libs globales doit se relancer apres chaque navigation Astro.
       const bind = () => {
+        updateDeviceClass();
+        bindAnchors();
         autoBindTextReveal();
         autoBindMagnetic();
-        // Refresh ScrollTrigger : le DOM a changé, les triggers doivent recalculer
+        // Refresh ScrollTrigger : le DOM a change, les triggers doivent recalculer.
         ScrollTrigger.refresh();
       };
 
-      // Init Lenis une seule fois (le loader persiste entre pages)
-      if (typeof window !== 'undefined' && !(window as any).__lenis_inited) {
+      // Init Lenis une seule fois.
+      if (typeof window !== 'undefined' && !appWindow.__lenis_inited) {
         const lenis = initLenis();
-        if (lenis) (window as any).lenis = lenis;
-        (window as any).__lenis_inited = true;
+        if (lenis) appWindow.lenis = lenis;
+        appWindow.__lenis_inited = true;
       }
 
-      // Bind initial + à chaque changement de page (Astro emit `astro:page-load`)
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', bind, { once: true });
       } else {
         bind();
       }
       document.addEventListener('astro:page-load', bind);
+      window.addEventListener('resize', updateDeviceClass, { passive: true });
     </script>
   </body>
 </html>

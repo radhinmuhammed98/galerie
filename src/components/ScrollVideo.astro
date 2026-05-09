@@ -18,7 +18,7 @@ const t = lang === 'en' ? en : fr;
          se révèle progressivement sur les 10 premiers % du scroll. -->
     <canvas
       id="scroll-video-canvas"
-      class="absolute aspect-[16/9] w-[min(96vw,170vh)] max-h-[95vh] z-0 rounded-lg shadow-2xl border border-ivoire/10"
+      class="scroll-video-canvas absolute inset-0 h-full w-full md:inset-auto md:aspect-[16/9] md:w-[min(96vw,170vh)] md:max-h-[95vh] z-0 md:rounded-lg shadow-2xl border border-ivoire/10"
       style="opacity: 0;"
     ></canvas>
 
@@ -66,7 +66,8 @@ const t = lang === 'en' ? en : fr;
 
       if (!canvas || !section || !overlay1 || !overlay2) return;
 
-      section.style.height = "550vh";
+      const isMobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+      section.style.height = isMobile ? "420vh" : "550vh";
 
       if (particlesContainer) initParticles(particlesContainer, { count: 60 });
 
@@ -126,5 +127,42 @@ const t = lang === 'en' ? en : fr;
   .scroll-video-section h2 {
     font-weight: 300;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  @media (max-width: 767px) {
+    .scroll-video-pin {
+      height: 100svh;
+      min-height: 100svh;
+    }
+
+    .scroll-video-pin::after {
+      content: "";
+      position: absolute;
+      inset: 24px 16px;
+      z-index: 1;
+      pointer-events: none;
+      border: 1px solid rgba(244, 239, 230, 0.12);
+      background: linear-gradient(180deg, rgba(10, 10, 10, 0.05), rgba(10, 10, 10, 0.32));
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.36);
+      backdrop-filter: blur(1px);
+      -webkit-backdrop-filter: blur(1px);
+    }
+
+    .scroll-video-overlay-1 h2,
+    .scroll-video-overlay-2 h2 {
+      max-width: 92vw;
+      font-size: clamp(2.35rem, 11vw, 4.2rem);
+      line-height: 1;
+      text-wrap: balance;
+    }
+
+    #scroll-video-loader {
+      bottom: max(1.25rem, env(safe-area-inset-bottom));
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(212, 184, 134, 0.18);
+      background: rgba(10, 10, 10, 0.42);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
   }
 </style>

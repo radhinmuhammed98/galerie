@@ -12,7 +12,7 @@ const services = [
 ];
 ---
 
-<section class="py-32 bg-noir-orfevre text-ivoire relative overflow-hidden" id="services">
+<section class="py-32 surface-art text-ivoire relative overflow-hidden" id="services">
   <div class="max-w-7xl mx-auto px-6 md:px-12">
 
     <!-- Headline massif inspiré du site réel -->
@@ -31,7 +31,9 @@ const services = [
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       {services.map((svc) => (
-        <div
+        <a
+          href="#contact-cta"
+          data-scroll-link
           class="service-card relative group aspect-[3/4] overflow-hidden cursor-pointer"
           data-cursor="link"
           data-magnetic
@@ -50,9 +52,13 @@ const services = [
                 {svc.title}
               </h3>
               <div class="w-12 h-px bg-or-fonce mt-6 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 delay-100"></div>
+              <span class="service-card__cta mt-5 inline-flex items-center gap-3 font-sans text-[10px] uppercase tracking-[0.22em] text-ivoire/80">
+                {lang === 'en' ? 'Enquire' : 'Demander'}
+                <span aria-hidden="true">+</span>
+              </span>
             </div>
           </div>
-        </div>
+        </a>
       ))}
     </div>
 
@@ -91,11 +97,11 @@ const services = [
         });
       }
 
-      // Cards reveal
+      // Cards reveal : leger decalage vertical + profondeur pour garder le rythme editorial.
       gsap.fromTo(".service-card",
-        { y: 80, opacity: 0 },
+        { y: 90, opacity: 0, rotateX: 5 },
         {
-          y: 0, opacity: 1, duration: 1, stagger: 0.18, ease: "power3.out",
+          y: 0, opacity: 1, rotateX: 0, duration: 1.05, stagger: 0.18, ease: "power3.out",
           scrollTrigger: { trigger: "#services", start: "top 70%" }
         }
       );
@@ -113,6 +119,60 @@ const services = [
 <style>
   .service-card__title-wrap { will-change: transform; }
   .services-line-inner { will-change: transform; }
+  .service-card {
+    isolation: isolate;
+    transform-style: preserve-3d;
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.18);
+  }
+  .service-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(212, 184, 134, 0.24), transparent 42%),
+      linear-gradient(135deg, rgba(244, 239, 230, 0.12), transparent 38%);
+    mix-blend-mode: screen;
+    transition: opacity 0.55s ease;
+  }
+  .service-card:hover::after,
+  .service-card:focus-visible::after {
+    opacity: 1;
+  }
+  .service-card__cta {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .service-card:hover .service-card__cta,
+  .service-card:focus-visible .service-card__cta {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (max-width: 767px) {
+    #services {
+      padding-block: 5.5rem;
+    }
+
+    .service-card {
+      min-height: 58vh;
+      border: 1px solid rgba(244, 239, 230, 0.12);
+      background: rgba(244, 239, 230, 0.04);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .service-card__title-wrap {
+      padding: 0.85rem;
+      border: 1px solid rgba(212, 184, 134, 0.16);
+      background: rgba(10, 10, 10, 0.34);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .services-line-inner { transform: none !important; }
   }

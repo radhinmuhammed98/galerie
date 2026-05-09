@@ -14,11 +14,10 @@ const ctaSub = lang === 'en'
   ? "A question about a work, an auction, or an upcoming exhibition? We respond within 24 hours."
   : "Une question sur une œuvre, une vente aux enchères, ou une prochaine exposition ? Nous répondons sous 24h.";
 
-const contactPath = lang === 'en' ? '/en/contact' : '/fr/contact';
 ---
 
 <section
-  class="contact-cta-section relative bg-noir-orfevre text-ivoire overflow-hidden"
+  class="contact-cta-section relative surface-art text-ivoire overflow-hidden"
   id="contact-cta"
   aria-label={ctaTitle}
 >
@@ -35,7 +34,7 @@ const contactPath = lang === 'en' ? '/en/contact' : '/fr/contact';
         <p class="cta-label font-sans text-xs uppercase tracking-[0.3em] text-or-fonce mb-8 opacity-0">
           {lang === 'en' ? "Get in touch" : "Prendre contact"}
         </p>
-        <h2 class="cta-title font-serif text-[clamp(3.5rem,9vw,8rem)] leading-[0.9] tracking-tight uppercase text-ivoire">
+        <h2 class="cta-title font-serif leading-[0.9] tracking-tight uppercase text-ivoire">
           {ctaTitle.split(' ').map((word) => (
             <span class="cta-title-word block overflow-hidden">
               <span class="cta-title-inner inline-block" style="transform: translateY(105%);">{word}</span>
@@ -54,7 +53,7 @@ const contactPath = lang === 'en' ? '/en/contact' : '/fr/contact';
         <div>
           <a
             href={`mailto:${t['footer.email']}`}
-            class="cta-btn group relative inline-flex items-center gap-4 font-sans text-sm uppercase tracking-[0.2em] text-noir-orfevre bg-ivoire px-8 py-5 overflow-hidden transition-colors duration-500 hover:text-ivoire"
+            class="cta-btn button-sheen group relative inline-flex items-center gap-4 font-sans text-sm uppercase tracking-[0.2em] text-noir-orfevre bg-ivoire px-8 py-5 overflow-hidden transition-colors duration-500 hover:text-ivoire"
             data-cursor="link"
             data-magnetic
             data-magnetic-radius="80"
@@ -161,10 +160,67 @@ const contactPath = lang === 'en' ? '/en/contact' : '/fr/contact';
 </script>
 
 <style>
-  .cta-title-word { line-height: 1.05; }
-  .cta-title-inner { will-change: transform; }
+  .cta-title {
+    font-size: clamp(3.25rem, 8.5vw, 8rem);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .cta-title-word {
+    line-height: 1.02;
+    max-width: 100%;
+  }
+  .cta-title-inner {
+    max-width: 100%;
+    will-change: transform;
+  }
   .cta-btn-bg { will-change: transform; }
   .cta-btn { will-change: color; }
+
+  @media (max-width: 767px) {
+    .contact-cta-section .relative.z-10 {
+      padding-block: 5.5rem;
+    }
+
+    .cta-right {
+      padding: 1rem;
+      border: 1px solid rgba(244, 239, 230, 0.12);
+      background: rgba(244, 239, 230, 0.045);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .cta-title {
+      font-size: clamp(2.85rem, 15vw, 5rem);
+      line-height: 0.9;
+    }
+
+    .cta-title-word {
+      overflow: visible;
+    }
+
+    .cta-title-inner {
+      display: block;
+      overflow-wrap: normal;
+      word-break: keep-all;
+    }
+
+    .cta-btn {
+      width: 100%;
+      justify-content: center;
+      padding-inline: 1rem;
+    }
+
+    .contact-cta-section dl {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .cta-title {
+      font-size: clamp(2.45rem, 13.5vw, 3.8rem);
+    }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .cta-title-inner { transform: none !important; }

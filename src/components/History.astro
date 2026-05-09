@@ -6,7 +6,7 @@ const { lang } = Astro.props;
 const t = lang === 'en' ? en : fr;
 ---
 
-<section class="py-32 px-6 md:px-12 bg-ivoire text-noir-orfevre relative" id="history">
+<section class="history-section py-32 px-6 md:px-12 text-noir-orfevre relative overflow-hidden" id="history">
   <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
 
     <div class="md:col-span-5 relative group history-img-container">
@@ -34,18 +34,47 @@ const t = lang === 'en' ? en : fr;
 </section>
 
 <script>
-  import { ScrollTrigger } from "../lib/gsap-config";
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
   import { revealText } from "../lib/text-reveal";
   import { revealImage } from "../lib/image-reveal";
 
   if (typeof window !== "undefined") {
     const setup = () => {
+      const section = document.getElementById("history");
+      if (!section || section.dataset.historyBound === "true") return;
+      section.dataset.historyBound = "true";
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
       // 1. Curtain reveal vertical sur l'image (descend de haut en bas)
-      const imgContainer = document.querySelector<HTMLElement>(".history-img-container .aspect-\\[3\\/4\\]");
-      const img = document.querySelector<HTMLElement>(".history-img");
-      if (imgContainer && img) {
+      const imageFrame = section.querySelector<HTMLElement>(".history-img-container .aspect-\\[3\\/4\\]");
+      const imageWrap = section.querySelector<HTMLElement>(".history-img-container");
+      const img = section.querySelector<HTMLElement>(".history-img");
+      if (imageWrap && !reduced) {
+        gsap.fromTo(
+          imageWrap,
+          { y: 96, opacity: 0, rotate: -1.4, clipPath: "inset(10% 0% 10% 0%)" },
+          {
+            y: 0,
+            opacity: 1,
+            rotate: 0,
+            clipPath: "inset(0% 0% 0% 0%)",
+            duration: 1.25,
+            ease: "power4.out",
+            scrollTrigger: { trigger: section, start: "top 72%", once: true },
+          }
+        );
+
+        gsap.to(imageWrap, {
+          y: -34,
+          ease: "none",
+          scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 1.2 },
+        });
+      }
+
+      if (imageFrame && img) {
         revealImage(
-          imgContainer,
+          imageFrame,
           {
             direction: "curtain-top",
             duration: 1.4,
@@ -59,7 +88,7 @@ const t = lang === 'en' ? en : fr;
       }
 
       // 2. Split text H2 (mots, blur)
-      const h2 = document.querySelector<HTMLElement>(".history-h2");
+      const h2 = section.querySelector<HTMLElement>(".history-h2");
       if (h2) {
         revealText(h2, {
           mode: "words",
@@ -71,7 +100,7 @@ const t = lang === 'en' ? en : fr;
       }
 
       // 3. Paragraphe : split par mots, plus rapide, encore plus subtil
-      const p = document.querySelector<HTMLElement>(".history-paragraph");
+      const p = section.querySelector<HTMLElement>(".history-paragraph");
       if (p) {
         revealText(p, {
           mode: "words",
@@ -94,3 +123,39 @@ const t = lang === 'en' ? en : fr;
     }
   }
 </script>
+
+<style>
+  .history-section {
+    background:
+      radial-gradient(circle at 18% 12%, rgba(184, 147, 90, 0.18), transparent 32rem),
+      radial-gradient(circle at 84% 18%, rgba(143, 95, 61, 0.12), transparent 26rem),
+      linear-gradient(180deg, #EFE5D5 0%, #F4EFE6 48%, #E9DDC9 100%);
+  }
+
+  .history-img-container {
+    will-change: transform, opacity, clip-path;
+  }
+
+  .history-img-container .aspect-\[3\/4\] {
+    box-shadow: 0 34px 100px rgba(10, 10, 10, 0.18);
+  }
+
+  @media (max-width: 767px) {
+    .history-section {
+      padding-block: 5.5rem;
+    }
+
+    .history-img-container .aspect-\[3\/4\] {
+      border: 1px solid rgba(10, 10, 10, 0.1);
+      box-shadow: 0 24px 68px rgba(10, 10, 10, 0.14);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .history-img-container {
+      transform: none !important;
+      opacity: 1 !important;
+      clip-path: none !important;
+    }
+  }
+</style>

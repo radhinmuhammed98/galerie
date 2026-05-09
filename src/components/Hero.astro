@@ -24,7 +24,7 @@ const heroH1Lines = lang === 'en'
          se révèle progressivement au scroll. -->
     <canvas
       id="hero-sequence-canvas"
-      class="absolute aspect-[16/9] w-[min(96vw,170vh)] max-h-[95vh] z-0 rounded-lg shadow-2xl border border-ivoire/10"
+      class="hero-sequence-canvas absolute inset-0 h-full w-full md:inset-auto md:aspect-[16/9] md:w-[min(96vw,170vh)] md:max-h-[95vh] z-0 md:rounded-lg shadow-2xl border border-ivoire/10"
       style="opacity: 0;"
     ></canvas>
 
@@ -80,7 +80,8 @@ const heroH1Lines = lang === 'en'
       if (!canvas || !section || !overlay1 || !overlay2) return;
 
       // 550vh = scroll très contemplatif (5.5 écrans pour traverser la séquence)
-      section.style.height = "550vh";
+      const isMobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+      section.style.height = isMobile ? "420vh" : "550vh";
 
       if (particlesContainer) initParticles(particlesContainer, { count: 80 });
 
@@ -188,5 +189,51 @@ const heroH1Lines = lang === 'en'
   .hero-scroll-section h2 {
     font-weight: 300;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  @media (max-width: 767px) {
+    .hero-scroll-pin {
+      height: 100svh;
+      min-height: 100svh;
+    }
+
+    .hero-scroll-pin::after {
+      content: "";
+      position: absolute;
+      inset: 78px 16px 24px;
+      z-index: 1;
+      pointer-events: none;
+      border: 1px solid rgba(244, 239, 230, 0.12);
+      background: linear-gradient(180deg, rgba(10, 10, 10, 0.08), rgba(10, 10, 10, 0.34));
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.36);
+      backdrop-filter: blur(1px);
+      -webkit-backdrop-filter: blur(1px);
+    }
+
+    .hero-overlay-1,
+    .hero-overlay-2 {
+      padding-inline: 1.25rem;
+    }
+
+    .hero-h1 {
+      font-size: clamp(2.8rem, 14vw, 4.8rem);
+      line-height: 0.96;
+      text-wrap: balance;
+    }
+
+    .hero-overlay-2 h2 {
+      font-size: clamp(2.4rem, 12vw, 4rem);
+      line-height: 1;
+      text-wrap: balance;
+    }
+
+    #hero-sequence-loader {
+      bottom: max(1.25rem, env(safe-area-inset-bottom));
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(212, 184, 134, 0.18);
+      background: rgba(10, 10, 10, 0.42);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
   }
 </style>

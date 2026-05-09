@@ -19,12 +19,24 @@
     --or-clair: #D4B886;
     --gris-pierre: #2A2A2A;
     --blanc-pur: #FFFFFF;
+    --cuivre-patine: #8F5F3D;
+    --brun-vernis: #1A1210;
+    --ivoire-chaud: #EFE5D5;
+    --ombre-tableau: #130F0C;
   }
 
   html, body {
     @apply bg-noir-orfevre text-ivoire font-sans;
     margin: 0;
     padding: 0;
+  }
+
+  html {
+    scroll-padding-top: 96px;
+  }
+
+  html.is-mobile-device {
+    scroll-padding-top: 112px;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -50,6 +62,24 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  @media (max-width: 767px) {
+    body {
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(212, 184, 134, 0.12), transparent 34rem),
+        #0A0A0A;
+    }
+
+    .cursor-root {
+      display: none !important;
+    }
+  }
+
+  :focus-visible {
+    outline: 1px solid rgba(212, 184, 134, 0.88);
+    outline-offset: 4px;
   }
 }
 
@@ -81,5 +111,43 @@
 
   @media (prefers-reduced-motion: reduce) {
     .link-fancy::after { transition: none; }
+  }
+
+  .glass-mobile {
+    border: 1px solid rgba(244, 239, 230, 0.12);
+    background: rgba(10, 10, 10, 0.48);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  .surface-art {
+    background:
+      radial-gradient(circle at 22% 0%, rgba(212, 184, 134, 0.16), transparent 32rem),
+      radial-gradient(circle at 88% 32%, rgba(143, 95, 61, 0.18), transparent 26rem),
+      linear-gradient(180deg, #130F0C 0%, #0A0A0A 58%, #120D0B 100%);
+  }
+
+  .button-sheen {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .button-sheen::after {
+    content: "";
+    position: absolute;
+    inset: -40% auto -40% -65%;
+    width: 42%;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+    transform: skewX(-18deg);
+    transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2;
+  }
+
+  .button-sheen:hover::after,
+  .button-sheen:focus-visible::after {
+    left: 120%;
   }
 }

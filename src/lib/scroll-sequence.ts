@@ -12,10 +12,11 @@ export interface ScrollSequenceOptions {
   onProgress?: (progress: number) => void; // appelé à chaque update du scroll (0..1)
   /** ratio largeur/hauteur de la frame source pour ajuster le canvas (défaut: déduit de la première image) */
   sourceAspect?: number;
+  mobileFit?: "contain" | "cover";
 }
 
 export function initScrollSequence(opts: ScrollSequenceOptions): () => void {
-  const { canvas, section, framePath, frameCount, loaderEl, progressEl, onProgress } = opts;
+  const { canvas, section, framePath, frameCount, loaderEl, progressEl, onProgress, mobileFit = "cover" } = opts;
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) return () => {};
 
@@ -41,9 +42,11 @@ export function initScrollSequence(opts: ScrollSequenceOptions): () => void {
     const ch = canvas.height;
 
     // object-contain : tout afficher sans crop
+    const shouldCover = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches && mobileFit === "cover";
     const iw = img.naturalWidth;
     const ih = img.naturalHeight;
-    const scale = Math.min(cw / iw, ch / ih);
+    // Desktop conserve le cadrage editorial ; mobile couvre tout l'ecran.
+    const scale = shouldCover ? Math.max(cw / iw, ch / ih) : Math.min(cw / iw, ch / ih);
     const w = iw * scale;
     const h = ih * scale;
     const x = (cw - w) / 2;

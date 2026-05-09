@@ -4,34 +4,70 @@ import en from '../i18n/en.json';
 
 const { lang } = Astro.props;
 const t = lang === 'en' ? en : fr;
-const basePath = lang === 'en' ? '/en' : '/fr';
+const basePath = lang === 'en' ? '/en/' : '/fr/';
+const alternatePath = lang === 'en' ? '/fr/' : '/en/';
 ---
 
-<nav id="main-nav" class="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center font-sans text-sm uppercase tracking-widest text-ivoire transition-all duration-500">
-  <a
-    href={basePath}
-    class="link-fancy"
-    data-cursor="link"
-    data-magnetic
-    data-magnetic-radius="100"
-    data-magnetic-amp="8"
-    data-magnetic-inner="img"
-    data-magnetic-inner-amp="4"
-    aria-label="Accueil"
-  >
-    <img src="/wordmark-logo-white.svg" alt="Galerie des Orfèvres" class="h-8 w-auto block" id="nav-logo" />
-  </a>
+<nav id="main-nav" class="fixed top-0 left-0 w-full z-50 px-4 md:px-6 py-4 md:py-6 font-sans text-sm uppercase tracking-widest text-ivoire transition-all duration-500">
+  <div class="nav-shell mx-auto flex w-full max-w-[1800px] items-center justify-between">
+    <a
+      href={basePath}
+      class="link-fancy"
+      data-cursor="link"
+      data-magnetic
+      data-magnetic-radius="100"
+      data-magnetic-amp="8"
+      data-magnetic-inner="img"
+      data-magnetic-inner-amp="4"
+      aria-label="Accueil"
+    >
+      <img src="/wordmark-logo-white.svg" alt="Galerie des Orfevres" class="h-7 md:h-8 w-auto block" id="nav-logo" />
+    </a>
 
-  <div class="hidden md:flex items-center gap-12">
-    <a href={`${basePath}#gallery`} class="link-fancy hover:text-or-fonce transition-colors">{t['nav.gallery']}</a>
-    <a href={`${basePath}#history`} class="link-fancy hover:text-or-fonce transition-colors">{t['nav.history']}</a>
-    <a href={`${basePath}#contact`} class="link-fancy hover:text-or-fonce transition-colors">{t['nav.contact']}</a>
+    <div class="hidden md:flex items-center gap-12">
+      <a href={`${basePath}#gallery`} data-scroll-link class="link-fancy hover:text-or-fonce transition-colors">{t['nav.gallery']}</a>
+      <a href={`${basePath}#history`} data-scroll-link class="link-fancy hover:text-or-fonce transition-colors">{t['nav.history']}</a>
+      <a href={`${basePath}#contact`} data-scroll-link class="link-fancy hover:text-or-fonce transition-colors">{t['nav.contact']}</a>
+    </div>
+
+    <div class="hidden md:flex items-center gap-4">
+      <a href="/fr/" data-language-switch data-lang-target="fr" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'fr' ? 'text-or-fonce' : ''}`}>FR</a>
+      <span class="opacity-40">/</span>
+      <a href="/en/" data-language-switch data-lang-target="en" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'en' ? 'text-or-fonce' : ''}`}>EN</a>
+    </div>
+
+    <div class="flex md:hidden items-center gap-3">
+      <a
+        href={alternatePath}
+        data-language-switch
+        data-lang-target={lang === 'en' ? 'fr' : 'en'}
+        class="mobile-lang-switch"
+        aria-label={lang === 'en' ? 'Version francaise' : 'English version'}
+      >
+        {lang === 'en' ? 'FR' : 'EN'}
+      </a>
+      <button
+        id="mobile-nav-toggle"
+        class="mobile-nav-toggle"
+        type="button"
+        aria-controls="mobile-nav-menu"
+        aria-expanded="false"
+        aria-label="Menu"
+      >
+        <span></span>
+        <span></span>
+      </button>
+    </div>
   </div>
 
-  <div class="flex items-center gap-4">
-    <a href="/fr" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'fr' ? 'text-or-fonce' : ''}`}>FR</a>
-    <span class="opacity-40">/</span>
-    <a href="/en" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'en' ? 'text-or-fonce' : ''}`}>EN</a>
+  <div id="mobile-nav-menu" class="mobile-nav-menu md:hidden" inert>
+    <a href={`${basePath}#gallery`} data-scroll-link>{t['nav.gallery']}</a>
+    <a href={`${basePath}#history`} data-scroll-link>{t['nav.history']}</a>
+    <a href={`${basePath}#contact`} data-scroll-link>{t['nav.contact']}</a>
+    <div class="mobile-nav-menu__langs" aria-label="Language">
+      <a href="/fr/" data-language-switch data-lang-target="fr" class={lang === 'fr' ? 'is-active' : ''}>FR</a>
+      <a href="/en/" data-language-switch data-lang-target="en" class={lang === 'en' ? 'is-active' : ''}>EN</a>
+    </div>
   </div>
 </nav>
 
@@ -40,7 +76,51 @@ const basePath = lang === 'en' ? '/en' : '/fr';
 
   if (typeof window !== "undefined") {
     const setup = () => {
-      // Animation logo : fade-in + léger scale au premier chargement uniquement
+      const nav = document.getElementById("main-nav");
+      const toggle = document.getElementById("mobile-nav-toggle") as HTMLButtonElement | null;
+      const menu = document.getElementById("mobile-nav-menu") as HTMLElement | null;
+
+      const closeMenu = () => {
+        nav?.classList.remove("is-menu-open");
+        toggle?.setAttribute("aria-expanded", "false");
+        menu?.setAttribute("inert", "");
+      };
+
+      if (toggle && menu && !toggle.dataset.bound) {
+        toggle.dataset.bound = "true";
+        toggle.addEventListener("click", () => {
+          const isOpen = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!isOpen));
+          nav?.classList.toggle("is-menu-open", !isOpen);
+          if (isOpen) menu.setAttribute("inert", "");
+          else menu.removeAttribute("inert");
+        });
+
+        menu.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", closeMenu);
+        });
+      }
+
+      document.querySelectorAll<HTMLAnchorElement>("[data-language-switch]").forEach((link) => {
+        if (link.dataset.langBound) return;
+        link.dataset.langBound = "true";
+        link.addEventListener("click", () => {
+          if (!window.location.hash) return;
+          const target = link.dataset.langTarget === "en" ? "/en/" : "/fr/";
+          link.href = `${target}${window.location.hash}`;
+        });
+      });
+
+      if (nav && !nav.dataset.scrollBound) {
+        nav.dataset.scrollBound = "true";
+        const updateNav = () => {
+          nav.classList.toggle("is-scrolled", window.scrollY > 24);
+        };
+        updateNav();
+        window.addEventListener("scroll", updateNav, { passive: true });
+      }
+
+      // Animation logo : fade-in + leger scale au premier chargement uniquement.
       const logo = document.getElementById("nav-logo");
       if (!logo) return;
 
@@ -70,5 +150,129 @@ const basePath = lang === 'en' ? '/en' : '/fr';
     } else {
       setup();
     }
+    document.addEventListener("astro:page-load", setup);
   }
 </script>
+
+<style>
+  .nav-shell {
+    transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease;
+  }
+
+  #main-nav.is-scrolled .nav-shell {
+    padding-block: 0.8rem;
+    padding-inline: 1rem;
+    border: 1px solid rgba(244, 239, 230, 0.11);
+    background: rgba(10, 10, 10, 0.58);
+    box-shadow: 0 18px 70px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  @media (max-width: 767px) {
+    #main-nav {
+      padding-top: max(0.85rem, env(safe-area-inset-top));
+    }
+
+    .nav-shell,
+    .mobile-nav-menu {
+      border: 1px solid rgba(244, 239, 230, 0.12);
+      background: rgba(10, 10, 10, 0.58);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+    }
+
+    .nav-shell {
+      min-height: 58px;
+      padding: 0.75rem 0.9rem;
+    }
+
+    .mobile-lang-switch,
+    .mobile-nav-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(212, 184, 134, 0.28);
+      background: rgba(244, 239, 230, 0.06);
+      color: #F4EFE6;
+    }
+
+    .mobile-lang-switch {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+    }
+
+    .mobile-nav-toggle {
+      position: relative;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mobile-nav-toggle span {
+      width: 18px;
+      height: 1px;
+      background: currentColor;
+      transition: transform 0.35s ease;
+    }
+
+    #main-nav.is-menu-open .mobile-nav-toggle span:first-child {
+      transform: translateY(3.5px) rotate(45deg);
+    }
+
+    #main-nav.is-menu-open .mobile-nav-toggle span:last-child {
+      transform: translateY(-3.5px) rotate(-45deg);
+    }
+
+    .mobile-nav-menu {
+      position: absolute;
+      top: calc(100% + 0.55rem);
+      left: 1rem;
+      right: 1rem;
+      display: grid;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+
+    #main-nav.is-menu-open .mobile-nav-menu {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .mobile-nav-menu a {
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid rgba(244, 239, 230, 0.09);
+      color: rgba(244, 239, 230, 0.88);
+      letter-spacing: 0.18em;
+    }
+
+    .mobile-nav-menu__langs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: rgba(244, 239, 230, 0.04);
+    }
+
+    .mobile-nav-menu__langs a {
+      text-align: center;
+      border-bottom: 0;
+    }
+
+    .mobile-nav-menu__langs .is-active {
+      color: #D4B886;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-shell,
+    .mobile-nav-menu,
+    .mobile-nav-toggle span {
+      transition: none;
+    }
+  }
+</style>

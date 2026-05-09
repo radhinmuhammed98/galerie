@@ -21,7 +21,11 @@
 
 <script>
   import { initLoader } from "./Loader.ts";
-  if (typeof window !== "undefined") initLoader();
+  if (typeof window !== "undefined") {
+    initLoader();
+    document.addEventListener("astro:before-preparation", initLoader);
+    document.addEventListener("astro:page-load", initLoader);
+  }
 </script>
 
 <style>
@@ -33,7 +37,7 @@
     background: #0A0A0A; /* fallback derrière les panneaux split */
     /* Fondu final après l'ouverture du rideau */
     opacity: 1;
-    transition: opacity 0.9s ease;
+    transition: opacity 0.65s ease;
   }
   .loader[data-state="done"]    { pointer-events: none; }
   .loader[data-state="fadeout"] { opacity: 0; pointer-events: none; }
@@ -49,7 +53,7 @@
     will-change: transform;
     transform: translateY(0);
     /* 2.2s + ease "expo in-out" très étiré : départ doux, accélération douce, arrivée douce */
-    transition: transform 2.2s cubic-bezier(0.86, 0, 0.07, 1);
+    transition: transform 1.35s cubic-bezier(0.86, 0, 0.07, 1);
     /* Petit shadow doré subtil sur la ligne de séparation pour évoquer la lumière qui s'échappe */
     box-shadow: 0 0 0 0 rgba(212, 184, 134, 0);
   }
@@ -123,6 +127,29 @@
     animation: loader-fade-in 0.6s ease 0.7s forwards;
   }
   .loader__pct-symbol { margin-left: 1px; }
+
+  @media (max-width: 767px) {
+    .loader__content {
+      gap: 28px;
+      padding: 0 24px;
+    }
+
+    .loader__content::before {
+      content: "";
+      position: absolute;
+      width: min(72vw, 320px);
+      aspect-ratio: 1;
+      border: 1px solid rgba(212, 184, 134, 0.16);
+      background: rgba(244, 239, 230, 0.035);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: -1;
+    }
+
+    .loader__logo {
+      width: min(68vw, 300px);
+    }
+  }
 
   @keyframes loader-logo-in {
     to { opacity: 1; transform: translateY(0); }
