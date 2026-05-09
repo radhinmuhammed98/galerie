@@ -1,7 +1,6 @@
 ---
-// Section diptyque cinématographique : 2 vidéos côte à côte (canvas image-sequence)
-// scrubbed en synchro via UN SEUL ScrollTrigger.
-// Layout : split 50/50 desktop, stack vertical mobile (< 768px).
+// Section diptyque cinématographique — 2 canvas image-sequences scrubbed en synchro.
+// Enhancement: book-fold reveal (rotateY) + gold separator animation + 3D text overlays.
 
 import fr from '../i18n/fr.json';
 import en from '../i18n/en.json';
@@ -9,7 +8,6 @@ import en from '../i18n/en.json';
 const { lang } = Astro.props;
 const t = lang === 'en' ? en : fr;
 
-// Textes du diptyque (FR par défaut, EN si lang === 'en')
 const titleText = lang === 'en' ? "Two gazes, a single quest." : "Deux regards, une même quête.";
 const overlay1 = lang === 'en' ? "Light and shadow."        : "Le clair et l'obscur.";
 const overlay2 = lang === 'en' ? "Tradition and modernity." : "Tradition et modernité.";
@@ -19,55 +17,64 @@ const overlay3 = lang === 'en' ? "Two hands, one vision."   : "Deux mains, une v
 <section class="diptyque-section relative bg-noir-orfevre" id="diptyque">
   <div class="diptyque-pin sticky top-0 h-screen w-full overflow-hidden">
 
-    <!-- Titre H2 sticky en overlay haut -->
-    <div class="absolute top-12 left-0 right-0 z-10 text-center pointer-events-none">
+    <!-- Titre H2 en overlay haut -->
+    <div class="absolute top-10 left-0 right-0 z-10 text-center pointer-events-none px-6">
       <h2
-        class="diptyque-title text-ivoire text-3xl md:text-5xl font-serif tracking-wide opacity-0 px-6"
+        class="diptyque-title text-ivoire font-serif tracking-wide opacity-0 px-6"
+        style="font-size: clamp(1.8rem, 4vw, 4.5rem);"
         data-diptyque-title
       >
         {titleText}
       </h2>
     </div>
 
-    <!-- Container split desktop / stack mobile -->
-    <div class="absolute inset-0 flex flex-col md:flex-row">
+    <!-- Container split desktop / stack mobile — perspective pour book-fold -->
+    <div class="diptyque-panes-wrap absolute inset-0 flex flex-col md:flex-row" style="perspective: 1400px; transform-style: preserve-3d;">
 
-      <!-- Vidéo gauche -->
-      <div class="diptyque-pane relative w-full h-1/2 md:w-1/2 md:h-full overflow-hidden">
+      <!-- Panneau gauche — commence tourné à -25deg -->
+      <div class="diptyque-pane diptyque-pane-left relative w-full h-1/2 md:w-1/2 md:h-full overflow-hidden"
+           style="transform-origin: right center; transform: rotateY(-28deg); opacity: 0.4;">
         <canvas id="diptyque-canvas-left" class="w-full h-full block"></canvas>
-        <!-- Vignette dégradée sur le bord extérieur (gauche) -->
+        <!-- Vignette bord gauche -->
         <div class="absolute inset-0 pointer-events-none"
-             style="background: linear-gradient(to right, rgba(10,10,10,0.55) 0%, transparent 28%);"></div>
+             style="background: linear-gradient(to right, rgba(10,10,10,0.65) 0%, transparent 30%);"></div>
       </div>
 
-      <!-- Vidéo droite -->
-      <div class="diptyque-pane relative w-full h-1/2 md:w-1/2 md:h-full overflow-hidden">
+      <!-- Panneau droit — commence tourné à +25deg -->
+      <div class="diptyque-pane diptyque-pane-right relative w-full h-1/2 md:w-1/2 md:h-full overflow-hidden"
+           style="transform-origin: left center; transform: rotateY(28deg); opacity: 0.4;">
         <canvas id="diptyque-canvas-right" class="w-full h-full block"></canvas>
         <div class="absolute inset-0 pointer-events-none"
-             style="background: linear-gradient(to left, rgba(10,10,10,0.55) 0%, transparent 28%);"></div>
+             style="background: linear-gradient(to left, rgba(10,10,10,0.65) 0%, transparent 30%);"></div>
       </div>
     </div>
 
-    <!-- Séparateur or-fonce (vertical desktop, horizontal mobile) -->
-    <div class="diptyque-divider absolute pointer-events-none" aria-hidden="true"></div>
+    <!-- Séparateur or-fonce animé -->
+    <div class="diptyque-divider absolute pointer-events-none" aria-hidden="true">
+      <!-- Dot central qui se dilate -->
+      <div class="diptyque-divider-dot"></div>
+    </div>
 
-    <!-- Overlays textuels centrés sur la jonction (3 phases au scroll) -->
-    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20 px-6">
+    <!-- Overlays textuels — 3D entry -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-20 px-6" style="perspective: 900px;">
       <span data-diptyque-overlay="0"
-            class="diptyque-overlay opacity-0 absolute font-serif italic text-2xl md:text-4xl text-ivoire text-center max-w-3xl">
+            class="diptyque-overlay opacity-0 absolute font-serif italic text-ivoire text-center max-w-3xl"
+            style="font-size: clamp(1.6rem, 3.5vw, 3.5rem); transform: perspective(900px) rotateX(-18deg) translateZ(-60px);">
         {overlay1}
       </span>
       <span data-diptyque-overlay="1"
-            class="diptyque-overlay opacity-0 absolute font-serif italic text-2xl md:text-4xl text-ivoire text-center max-w-3xl">
+            class="diptyque-overlay opacity-0 absolute font-serif italic text-ivoire text-center max-w-3xl"
+            style="font-size: clamp(1.6rem, 3.5vw, 3.5rem); transform: perspective(900px) rotateX(-18deg) translateZ(-60px);">
         {overlay2}
       </span>
       <span data-diptyque-overlay="2"
-            class="diptyque-overlay opacity-0 absolute font-serif italic text-2xl md:text-4xl text-ivoire text-center max-w-3xl">
+            class="diptyque-overlay opacity-0 absolute font-serif italic text-ivoire text-center max-w-3xl"
+            style="font-size: clamp(1.6rem, 3.5vw, 3.5rem); transform: perspective(900px) rotateX(-18deg) translateZ(-60px);">
         {overlay3}
       </span>
     </div>
 
-    <!-- Loader unique pour les 2 séquences -->
+    <!-- Loader -->
     <div id="diptyque-loader"
          class="absolute bottom-8 left-1/2 -translate-x-1/2 z-[30] text-ivoire/50 text-xs font-sans tracking-[0.3em] uppercase">
       <span id="diptyque-progress">0</span>%
@@ -91,42 +98,70 @@ const overlay3 = lang === 'en' ? "Two hands, one vision."   : "Deux mains, une v
       const section = document.querySelector(".diptyque-section") as HTMLElement | null;
       const titleEl = document.querySelector<HTMLElement>("[data-diptyque-title]");
       const overlays = document.querySelectorAll<HTMLElement>("[data-diptyque-overlay]");
+      const paneLeft = document.querySelector<HTMLElement>(".diptyque-pane-left");
+      const paneRight = document.querySelector<HTMLElement>(".diptyque-pane-right");
       const loader = document.getElementById("diptyque-loader");
       const progress = document.getElementById("diptyque-progress");
 
       if (!canvasLeft || !canvasRight || !section) return;
 
-      // 400vh : 4 écrans de scroll, beaucoup plus contemplatif
       section.style.height = "400vh";
 
-      // Fade-in du titre dès l'entrée dans la section
-      if (titleEl) {
-        gsap.to(titleEl, {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // --- Book-fold reveal: les deux panneaux s'ouvrent comme un livre ---
+      if (paneLeft && paneRight && !reduced) {
+        gsap.to(paneLeft, {
+          rotateY: 0,
           opacity: 1,
-          y: 0,
-          duration: 1.1,
+          duration: 1.4,
           ease: "power3.out",
           scrollTrigger: {
             trigger: section,
-            start: "top 75%",
-            toggleActions: "play none none reverse",
+            start: "top 85%",
+            once: true,
           },
         });
+        gsap.to(paneRight, {
+          rotateY: 0,
+          opacity: 1,
+          duration: 1.4,
+          ease: "power3.out",
+          delay: 0.08,
+          scrollTrigger: {
+            trigger: section,
+            start: "top 85%",
+            once: true,
+          },
+        });
+      } else {
+        // Reduced motion: reveal instantly
+        if (paneLeft) { paneLeft.style.transform = "none"; paneLeft.style.opacity = "1"; }
+        if (paneRight) { paneRight.style.transform = "none"; paneRight.style.opacity = "1"; }
       }
 
+      // --- Titre fade-in avec légère montée Y ---
+      if (titleEl) {
+        gsap.fromTo(titleEl,
+          { opacity: 0, y: 16, rotateX: -10 },
+          {
+            opacity: 1, y: 0, rotateX: 0,
+            duration: 1.2, ease: "power3.out",
+            scrollTrigger: { trigger: section, start: "top 75%", toggleActions: "play none none reverse" },
+          }
+        );
+      }
+
+      // --- Overlays 3D (pilotés par onProgress) ---
       initDiptyqueSequence({
-        canvasLeft,
-        canvasRight,
-        section,
-        framePathLeft,
-        framePathRight,
+        canvasLeft, canvasRight, section,
+        framePathLeft, framePathRight,
         frameCount: FRAME_COUNT,
         loaderEl: loader,
         progressEl: progress,
         onProgress: (p) => {
-          // 3 overlays qui apparaissent successivement aux 3 quartiers de la section
+          // 3 overlays successifs, entrée 3D depuis depth
           const ranges: Array<[number, number, number]> = [
-            // [start, full, end] : fade-in à start, hold jusqu'à fin du peak, fade-out
             [0.10, 0.27, 0.32],
             [0.40, 0.55, 0.62],
             [0.70, 0.85, 0.92],
@@ -139,10 +174,13 @@ const overlay3 = lang === 'en' ? "Two hands, one vision."   : "Deux mains, une v
             if (p >= s && p < peak) opacity = (p - s) / (peak - s);
             else if (p >= peak && p < e) opacity = 1 - (p - peak) / (e - peak);
             opacity = Math.max(0, Math.min(1, opacity));
-            // y subtil pour accompagner le fade
-            const y = (1 - opacity) * 12;
+
+            // 3D: entry from depth
+            const rX = -18 * (1 - opacity);
+            const tZ = -60 * (1 - opacity);
+            const y = (1 - opacity) * 14;
             el.style.opacity = String(opacity);
-            el.style.transform = `translateY(${y}px)`;
+            el.style.transform = `perspective(900px) rotateX(${rX}deg) translateZ(${tZ}px) translateY(${y}px)`;
           });
         },
       });
@@ -161,29 +199,46 @@ const overlay3 = lang === 'en' ? "Two hands, one vision."   : "Deux mains, une v
 <style>
   .diptyque-title {
     font-weight: 300;
-    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-    transform: translateY(8px);
+    text-shadow: 0 4px 28px rgba(0, 0, 0, 0.6);
     will-change: opacity, transform;
+    transform-style: preserve-3d;
   }
 
   .diptyque-overlay {
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.85);
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.9);
     will-change: opacity, transform;
-    transform: translateY(12px);
   }
 
-  /* Séparateur or-fonce : vertical desktop, horizontal mobile */
+  /* Panneaux 3D */
+  .diptyque-pane {
+    will-change: transform, opacity;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+
+  /* Séparateur : ligne verticale desktop, horizontale mobile */
   .diptyque-divider {
-    background: rgba(184, 147, 90, 0.35);
-    /* Mobile : ligne horizontale au milieu */
+    background: rgba(184, 147, 90, 0.40);
     top: 50%;
     left: 0;
     right: 0;
     height: 1px;
   }
+
+  .diptyque-divider-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #D4B886;
+    box-shadow: 0 0 12px rgba(212, 184, 134, 0.7);
+  }
+
   @media (min-width: 768px) {
     .diptyque-divider {
-      /* Desktop : ligne verticale au milieu */
       top: 0;
       bottom: 0;
       left: 50%;
@@ -194,7 +249,15 @@ const overlay3 = lang === 'en' ? "Two hands, one vision."   : "Deux mains, une v
     }
   }
 
+  @media (max-width: 767px) {
+    .diptyque-pane-left,
+    .diptyque-pane-right {
+      /* Mobile: rotateX instead of rotateY for vertical stack */
+      transform-origin: bottom center !important;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .diptyque-title, .diptyque-overlay { transition: none; }
+    .diptyque-title, .diptyque-overlay, .diptyque-pane { transition: none; transform: none !important; opacity: 1 !important; }
   }
 </style>

@@ -1,7 +1,4 @@
 ---
-// Section monogramme cinématographique : le "GO" géant en arrière-plan
-// avec défilement parallaxe, œuvres flottantes, et manifeste éditorial.
-
 import fr from '../i18n/fr.json';
 import en from '../i18n/en.json';
 
@@ -16,57 +13,48 @@ const subText = lang === 'en'
   ? "23 Place Dauphine, Paris — Open every day, 10h–18h"
   : "23 Place Dauphine, Paris — Tous les jours, 10h–18h";
 
-// Œuvres flottantes extraites du carrousel réel
 const artworks = [
-  { src: "/images/about/image_10.jpg", label: lang === 'en' ? "Ancient Gold" : "L'Or Ancien" },
-  { src: "/images/about/image_11.jpg", label: lang === 'en' ? "Contemporary Flashes" : "Éclats Contemporains" },
-  { src: "/images/about/image_14.jpg", label: lang === 'en' ? "Gallery History" : "Histoire" },
+  { src: "/images/about/image_10.jpg", label: lang === 'en' ? "Ancient Gold"             : "L'Or Ancien" },
+  { src: "/images/about/image_11.jpg", label: lang === 'en' ? "Contemporary Flashes"     : "Éclats Contemporains" },
+  { src: "/images/about/image_14.jpg", label: lang === 'en' ? "Gallery History"           : "Histoire" },
 ];
 ---
 
-<section class="monogram-section relative bg-ivoire text-noir-orfevre overflow-hidden py-32 md:py-48" id="monogram" aria-label="Identité de la galerie">
+<section class="monogram-section relative bg-ivoire text-noir-orfevre overflow-hidden py-28 md:py-44" id="monogram" aria-label="Identité de la galerie">
 
-  <!-- Monogramme GO géant en arrière-plan -->
+  <!-- Monogramme GO géant — plus grand, légère perspective -->
   <div class="monogram-bg absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
-    <span class="monogram-glyph font-serif text-noir-orfevre opacity-[0.045] leading-none tracking-tighter">
-      GO
-    </span>
+    <span class="monogram-glyph font-serif text-noir-orfevre leading-none tracking-tighter"
+          style="opacity: 0.038; transform: perspective(900px) rotateX(6deg);">GO</span>
   </div>
 
-  <!-- Ligne decorative or -->
+  <!-- Ligne or top -->
   <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-or-fonce/40 to-transparent"></div>
 
   <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
 
-    <!-- Grille : texte gauche + œuvres droite -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-center">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-28 items-center">
 
       <!-- Colonne gauche : manifeste -->
       <div class="monogram-text">
-        <!-- Label catégorie -->
-        <p class="monogram-label font-sans text-xs uppercase tracking-[0.3em] text-or-fonce mb-8 opacity-0">
+        <p class="monogram-label font-sans text-[10px] uppercase tracking-[0.38em] text-or-fonce mb-8 opacity-0">
           {lang === 'en' ? "Our Identity" : "Notre Identité"}
         </p>
-
-        <!-- Citation manifeste -->
-        <blockquote class="monogram-quote font-serif text-3xl md:text-5xl leading-[1.1] tracking-tight mb-10">
-          <span class="block opacity-0 monogram-quote-line" style="transform: translateY(20px);">{manifestText}</span>
+        <blockquote class="monogram-quote font-serif leading-[1.06] tracking-tight mb-10"
+                    style="font-size: clamp(2.2rem, 4vw, 4.8rem);">
+          <span class="block opacity-0 monogram-quote-line" style="transform: perspective(800px) rotateX(-18deg) translateZ(-60px);">
+            {manifestText}
+          </span>
         </blockquote>
-
-        <!-- Ligne or -->
-        <div class="monogram-line w-0 h-px bg-or-fonce mb-10"></div>
-
-        <!-- Sous-texte adresse -->
-        <p class="monogram-sub font-sans text-sm text-gray-500 tracking-wider opacity-0">
-          {subText}
-        </p>
+        <div class="monogram-line w-0 h-px bg-or-fonce mb-10 opacity-70"></div>
+        <p class="monogram-sub font-sans text-sm text-gray-500 tracking-wider opacity-0">{subText}</p>
       </div>
 
-      <!-- Colonne droite : stacked artworks -->
-      <div class="monogram-artworks relative h-[480px] md:h-[600px]">
+      <!-- Colonne droite : stacked artworks avec 3D entry -->
+      <div class="monogram-artworks relative h-[480px] md:h-[620px]">
         {artworks.map((art, i) => (
           <div
-            class={`monogram-artwork-card absolute overflow-hidden bg-gris-pierre shadow-2xl opacity-0`}
+            class="monogram-artwork-card absolute overflow-hidden bg-gris-pierre shadow-2xl opacity-0"
             data-artwork-index={i}
             style={`
               width: ${i === 0 ? '72%' : i === 1 ? '60%' : '55%'};
@@ -74,45 +62,39 @@ const artworks = [
               top: ${i === 0 ? '0%' : i === 1 ? '12%' : '28%'};
               left: ${i === 0 ? '5%' : i === 1 ? '30%' : '10%'};
               z-index: ${3 - i};
-              transform: rotate(${i === 0 ? '-3deg' : i === 1 ? '2deg' : '-1deg'});
+              transform: perspective(900px) rotateY(${i === 0 ? '-22deg' : i === 1 ? '18deg' : '-14deg'}) rotate(${i === 0 ? '-3deg' : i === 1 ? '2deg' : '-1deg'}) translateZ(-120px);
+              border-radius: 16px;
             `}
           >
-            <img
-              src={art.src}
-              alt={art.label}
-              class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-              loading="lazy"
-            />
-            <!-- Label de l'œuvre -->
+            <img src={art.src} alt={art.label}
+                 class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                 loading="lazy" />
             <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-noir-orfevre/80 to-transparent">
-              <span class="font-sans text-xs text-ivoire tracking-widest uppercase">{art.label}</span>
+              <span class="font-sans text-[9px] text-ivoire tracking-widest uppercase">{art.label}</span>
             </div>
           </div>
         ))}
       </div>
-
     </div>
 
-    <!-- Stats row plein-largeur en bas -->
+    <!-- Stats row -->
     <div class="monogram-stats mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 pt-16 border-t border-noir-orfevre/10">
       {[
-        { n: "75+",  l: lang === 'en' ? "Annual Exhibitions" : "Expositions Annuelles" },
-        { n: "300+", l: lang === 'en' ? "Collaborative Projects" : "Projets Collaboratifs" },
-        { n: "300+", l: lang === 'en' ? "Artworks Exhibited" : "Œuvres Exposées" },
-        { n: "30K+", l: lang === 'en' ? "Annual Visitors" : "Visiteurs Annuels" },
+        { n: "75+",  l: lang === 'en' ? "Annual Exhibitions"    : "Expositions Annuelles" },
+        { n: "300+", l: lang === 'en' ? "Collaborative Projects": "Projets Collaboratifs" },
+        { n: "300+", l: lang === 'en' ? "Artworks Exhibited"    : "Œuvres Exposées" },
+        { n: "30K+", l: lang === 'en' ? "Annual Visitors"       : "Visiteurs Annuels" },
       ].map((s, i) => (
         <div class="monogram-stat opacity-0 text-center md:text-left" data-stat-index={i}>
           <p class="font-serif text-4xl md:text-5xl text-or-fonce mb-2">{s.n}</p>
-          <p class="font-sans text-xs uppercase tracking-[0.2em] text-gray-500">{s.l}</p>
+          <p class="font-sans text-[10px] uppercase tracking-[0.22em] text-gray-400">{s.l}</p>
         </div>
       ))}
     </div>
-
   </div>
 
-  <!-- Ligne decorative or bas -->
+  <!-- Ligne or bas -->
   <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-or-fonce/40 to-transparent"></div>
-
 </section>
 
 <script>
@@ -124,88 +106,56 @@ const artworks = [
       if (!section) return;
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // Parallaxe du monogramme GO
+      // Monogramme parallaxe
       const glyph = section.querySelector<HTMLElement>(".monogram-glyph");
       if (glyph && !reduced) {
-        gsap.to(glyph, {
-          yPercent: -20,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.5,
-          },
-        });
+        gsap.to(glyph, { yPercent: -24, ease: "none",
+          scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 1.5 } });
       }
 
-      // Révélation du texte et du label
+      // Text reveal
       const label = section.querySelector<HTMLElement>(".monogram-label");
       const quoteLine = section.querySelector<HTMLElement>(".monogram-quote-line");
       const line = section.querySelector<HTMLElement>(".monogram-line");
       const sub = section.querySelector<HTMLElement>(".monogram-sub");
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top 70%",
-          once: true,
-        },
-      });
-
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section, start: "top 70%", once: true } });
       if (label) tl.to(label, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" });
-      if (quoteLine) tl.to(quoteLine, { opacity: 1, y: 0, duration: 1.1, ease: "power3.out" }, "-=0.4");
-      if (line) tl.to(line, { width: "4rem", duration: 0.7, ease: "power2.inOut" }, "-=0.4");
+      if (quoteLine) tl.to(quoteLine, {
+        opacity: 1, rotateX: 0, z: 0,
+        duration: 1.2, ease: "power3.out",
+        clearProps: "transform",
+      }, "-=0.4");
+      if (line) tl.to(line, { width: "4.5rem", duration: 0.8, ease: "power2.inOut" }, "-=0.4");
       if (sub) tl.to(sub, { opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.3");
 
-      // Révélation des cartes d'œuvres avec stagger
+      // Artwork cards: 3D entry from depth per card
       const cards = section.querySelectorAll<HTMLElement>(".monogram-artwork-card");
       cards.forEach((card, i) => {
+        gsap.set(card, { y: 70 });
         gsap.to(card, {
-          opacity: 1,
-          y: 0,
-          rotation: parseFloat(card.style.transform.replace(/[^-\d.]/g, "") || "0"),
-          duration: 1.2,
-          ease: "power3.out",
-          delay: 0.15 * i,
-          scrollTrigger: {
-            trigger: section,
-            start: "top 65%",
-            once: true,
-          },
+          opacity: 1, y: 0, rotateY: i === 0 ? -3 : i === 1 ? 2 : -1,
+          translateZ: 0, rotateX: 0,
+          duration: 1.3, ease: "power3.out", delay: 0.18 * i,
+          scrollTrigger: { trigger: section, start: "top 68%", once: true },
         });
-        // Set initial state
-        gsap.set(card, { y: 60 });
-      });
 
-      // Hover sur chaque carte : léger lift
-      if (!reduced) {
-        cards.forEach((card) => {
+        if (!reduced) {
           card.addEventListener("mouseenter", () => {
-            gsap.to(card, { y: -12, scale: 1.03, zIndex: 10, duration: 0.5, ease: "power2.out" });
+            gsap.to(card, { y: -14, scale: 1.04, zIndex: 10, duration: 0.5, ease: "power2.out" });
           });
           card.addEventListener("mouseleave", () => {
             gsap.to(card, { y: 0, scale: 1, zIndex: parseInt(card.style.zIndex || "1"), duration: 0.6, ease: "power2.out" });
           });
-        });
-      }
+        }
+      });
 
-      // Compteurs stats avec stagger
+      // Stats stagger
       const stats = section.querySelectorAll<HTMLElement>(".monogram-stat");
       stats.forEach((stat, i) => {
-        gsap.to(stat, {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          ease: "power3.out",
-          delay: 0.1 * i,
-          scrollTrigger: {
-            trigger: stat.closest(".monogram-stats"),
-            start: "top 85%",
-            once: true,
-          },
-        });
-        gsap.set(stat, { y: 30 });
+        gsap.set(stat, { y: 32 });
+        gsap.to(stat, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", delay: 0.1 * i,
+          scrollTrigger: { trigger: stat.closest(".monogram-stats"), start: "top 85%", once: true } });
       });
 
       void ScrollTrigger;
@@ -213,42 +163,46 @@ const artworks = [
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setup, { once: true });
-    } else {
-      setup();
-    }
+    } else { setup(); }
   }
 </script>
 
 <style>
-  /* Monogramme GO : taille épique, font-weight ultra-léger */
   .monogram-glyph {
     font-family: "Cormorant Garamond", serif;
     font-weight: 300;
-    font-size: clamp(18rem, 45vw, 60rem);
-    line-height: 0.85;
-    letter-spacing: -0.08em;
+    font-size: clamp(22rem, 55vw, 70rem);
+    line-height: 0.82;
+    letter-spacing: -0.09em;
     will-change: transform;
     color: #0A0A0A;
+    transform-origin: center center;
   }
 
-  /* Cartes œuvres */
   .monogram-artwork-card {
     will-change: transform, opacity;
     cursor: pointer;
-    border: 1px solid rgba(10, 10, 10, 0.08);
+    border: 1px solid rgba(10, 10, 10, 0.06);
     transition: box-shadow 0.5s ease;
+    backface-visibility: hidden;
   }
-  .monogram-artwork-card:hover {
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+  .monogram-artwork-card:hover { box-shadow: 0 28px 72px rgba(0, 0, 0, 0.22); }
+
+  .monogram-quote-line {
+    will-change: transform, opacity;
+    transform-origin: center bottom;
   }
 
-  /* Stat : chiffre doré */
-  .monogram-stat {
-    will-change: opacity, transform;
+  .monogram-stat { will-change: opacity, transform; }
+  .monogram-line { will-change: width; }
+
+  @media (max-width: 767px) {
+    .monogram-section { padding-block: 4rem; }
+    .monogram-artworks { height: 340px; }
+    .monogram-glyph { font-size: 62vw !important; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .monogram-glyph { transform: none !important; }
-    .monogram-artwork-card { transform: none !important; }
+    .monogram-glyph, .monogram-artwork-card { transform: none !important; }
   }
 </style>

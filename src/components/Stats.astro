@@ -9,33 +9,52 @@ const stats = [
   { value: 75,  label: t['stats.exhibitions'], suffix: '+' },
   { value: 300, label: t['stats.projects'],    suffix: '+' },
   { value: 300, label: t['stats.artworks'],    suffix: '+' },
-  { value: 30,  label: t['stats.visitors'],    suffix: 'K+' }
+  { value: 30,  label: t['stats.visitors'],    suffix: 'K+' },
 ];
 ---
 
-<section class="py-32 bg-gris-pierre text-ivoire border-y border-noir-orfevre" id="stats">
-  <div class="max-w-7xl mx-auto px-6 md:px-12">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-      {stats.map((stat) => (
-        <div class="stat-item">
-          <div class="text-5xl md:text-6xl font-serif text-or-fonce mb-3 flex justify-center items-baseline">
-            <span class="stat-number" data-target={stat.value}>0</span>
-            <span class="text-3xl ml-1 stat-suffix">{stat.suffix}</span>
+<section class="stats-section relative overflow-hidden" id="stats">
+
+  <!-- Background: dark full-bleed -->
+  <div class="max-w-[1800px] mx-auto px-6 md:px-16 py-24 md:py-36">
+
+    <!-- Label -->
+    <p class="stats-label font-sans text-[10px] uppercase tracking-[0.38em] text-or-fonce mb-16 md:mb-24 opacity-0 text-center">
+      {lang === 'en' ? 'By the numbers' : 'En chiffres'}
+    </p>
+
+    <!-- Stats grid: 4 massive numbers -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-ivoire/[0.07]">
+      {stats.map((stat, i) => (
+        <div class="stat-item group relative flex flex-col items-center justify-center py-14 md:py-20 px-6 bg-noir-orfevre text-center overflow-hidden"
+             data-stat-index={i}>
+
+          <!-- Number + suffix -->
+          <div class="stat-number-wrap relative flex items-baseline justify-center gap-1 mb-5"
+               style="perspective: 600px;">
+            <span
+              class="stat-number font-serif text-or-fonce leading-none"
+              data-target={stat.value}
+              style="font-size: clamp(4.5rem, 9vw, 9rem);"
+            >0</span>
+            <span class="stat-suffix font-serif text-or-clair/70"
+                  style="font-size: clamp(2.5rem, 4.5vw, 5rem); font-weight: 300;">{stat.suffix}</span>
           </div>
-          <!-- Filament doré sous chaque chiffre, tracé au scroll -->
-          <svg
-            viewBox="0 0 80 2"
-            preserveAspectRatio="none"
-            width="60"
-            height="2"
-            class="stat-underline mx-auto mb-3 overflow-visible"
-            aria-hidden="true"
-          >
-            <line x1="0" y1="1" x2="80" y2="1" stroke="#B8935A" stroke-width="0.7" vector-effect="non-scaling-stroke" />
+
+          <!-- SVG filament -->
+          <svg viewBox="0 0 80 2" preserveAspectRatio="none" width="48" height="2"
+               class="stat-underline mb-5 overflow-visible" aria-hidden="true">
+            <line x1="0" y1="1" x2="80" y2="1" stroke="#B8935A" stroke-width="0.7" vector-effect="non-scaling-stroke"/>
           </svg>
-          <div class="font-sans text-xs uppercase tracking-widest text-gray-400">
+
+          <!-- Label -->
+          <p class="font-sans text-[10px] uppercase tracking-[0.28em] text-ivoire/40 leading-relaxed max-w-[120px]">
             {stat.label}
-          </div>
+          </p>
+
+          <!-- Hover gold shimmer -->
+          <div class="stat-shimmer absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+               style="background: radial-gradient(ellipse at 50% 0%, rgba(184,147,90,0.08) 0%, transparent 65%);"></div>
         </div>
       ))}
     </div>
@@ -48,8 +67,30 @@ const stats = [
 
   if (typeof window !== "undefined") {
     const setup = () => {
-      // Compteur numérique : tween d'un proxy { value }, pas de innerHTML fragile
-      document.querySelectorAll<HTMLElement>(".stat-number").forEach((el) => {
+      const section = document.getElementById("stats");
+      if (!section) return;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Label
+      const label = section.querySelector<HTMLElement>(".stats-label");
+      if (label) {
+        gsap.to(label, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out",
+          scrollTrigger: { trigger: section, start: "top 82%", once: true } });
+      }
+
+      // Stat items: 3D flip entry (rotateX from above)
+      const items = section.querySelectorAll<HTMLElement>(".stat-item");
+      if (!reduced) {
+        gsap.fromTo(items,
+          { opacity: 0, rotateX: -45, z: -120, y: 60 },
+          { opacity: 1, rotateX: 0, z: 0, y: 0,
+            duration: 1.0, stagger: 0.12, ease: "power4.out",
+            scrollTrigger: { trigger: section, start: "top 78%", once: true } }
+        );
+      }
+
+      // Numeric counters
+      section.querySelectorAll<HTMLElement>(".stat-number").forEach((el) => {
         const target = parseFloat(el.getAttribute("data-target") || "0");
         const proxy = { value: 0 };
         ScrollTrigger.create({
@@ -59,7 +100,7 @@ const stats = [
           onEnter: () => {
             gsap.to(proxy, {
               value: target,
-              duration: 2,
+              duration: 2.2,
               ease: "power2.out",
               onUpdate: () => { el.textContent = Math.floor(proxy.value).toString(); },
               onComplete: () => { el.textContent = target.toString(); },
@@ -68,27 +109,50 @@ const stats = [
         });
       });
 
-      // Tracé des filaments dorés sous chaque chiffre, en stagger
-      const lines = document.querySelectorAll<SVGGeometryElement>(".stat-underline line");
+      // SVG filament draw
+      const lines = section.querySelectorAll<SVGGeometryElement>(".stat-underline line");
       if (lines.length) {
         drawSVGStagger(lines, {
-          duration: 1.4,
-          ease: "power3.out",
-          stagger: 0.2,
-          scrollTrigger: { trigger: "#stats", start: "top 80%", once: true },
+          duration: 1.4, ease: "power3.out", stagger: 0.18,
+          scrollTrigger: { trigger: section, start: "top 80%", once: true },
         });
       }
+
+      void ScrollTrigger;
     };
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setup, { once: true });
-    } else {
-      setup();
-    }
+    } else { setup(); }
   }
 </script>
 
 <style>
-  .stat-suffix { font-weight: 300; }
+  .stats-section {
+    background: var(--noir-orfevre);
+  }
+
+  .stat-item {
+    will-change: transform, opacity;
+    transform-style: preserve-3d;
+    transition: background 0.4s ease;
+  }
+
+  .stat-number {
+    font-weight: 300;
+    will-change: contents;
+    letter-spacing: -0.04em;
+  }
+
+  .stat-suffix { font-weight: 300; letter-spacing: -0.03em; }
   .stat-underline line { will-change: stroke-dashoffset; }
+
+  @media (max-width: 767px) {
+    .stats-section { padding-block: 0; }
+    .stat-item { padding-block: 3.5rem; padding-inline: 1rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stat-item { transform: none !important; opacity: 1 !important; }
+  }
 </style>

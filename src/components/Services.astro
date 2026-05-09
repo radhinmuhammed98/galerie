@@ -6,22 +6,24 @@ const { lang } = Astro.props;
 const t = lang === 'en' ? en : fr;
 
 const services = [
-  { id: 1, title: t['services.auctions'],    img: "/images/about/image_15.jpg" },
-  { id: 2, title: t['services.consulting'],  img: "/images/about/image_16.jpg" },
-  { id: 3, title: t['services.exhibitions'], img: "/images/about/image_17.jpg" }
+  { id: 1, title: t['services.auctions'],    img: "/images/about/image_15.jpg",
+    desc: lang === 'en' ? "International auction events with expert selection and live bidding." : "Ventes aux enchères internationales avec sélection d'experts et enchères en direct." },
+  { id: 2, title: t['services.consulting'],  img: "/images/about/image_16.jpg",
+    desc: lang === 'en' ? "Personalised art advice for collectors, institutions and private clients." : "Conseil artistique personnalisé pour collectionneurs, institutions et clients privés." },
+  { id: 3, title: t['services.exhibitions'], img: "/images/about/image_17.jpg",
+    desc: lang === 'en' ? "Curated exhibitions from emerging and established contemporary artists." : "Expositions organisées avec des artistes contemporains émergents et établis." },
 ];
 ---
 
-<section class="py-32 surface-art text-ivoire relative overflow-hidden" id="services">
-  <div class="max-w-7xl mx-auto px-6 md:px-12">
+<section class="services-section surface-art text-ivoire relative overflow-hidden" id="services">
+  <div class="max-w-7xl mx-auto px-6 md:px-12 py-28 md:py-44">
 
-    <!-- Headline massif inspiré du site réel -->
-    <div class="mb-20 overflow-hidden">
-      <p class="services-label font-sans text-xs uppercase tracking-[0.3em] text-or-fonce mb-10 opacity-0">
+    <div class="services-header mb-20 md:mb-32 overflow-hidden">
+      <p class="services-label font-sans text-[10px] uppercase tracking-[0.38em] text-or-fonce mb-8 opacity-0">
         {lang === 'en' ? "What we offer" : "Nos expertises"}
       </p>
-      <h2 class="services-headline font-sans font-bold uppercase leading-[0.88] tracking-tight text-ivoire"
-          style="font-size: clamp(2.8rem, 8vw, 7.5rem);">
+      <h2 class="services-headline font-sans font-bold uppercase leading-[0.86] tracking-[-0.03em] text-ivoire"
+          style="font-size: clamp(2.8rem, 8.5vw, 8rem);">
         {lang === 'en'
           ? <><span class="services-line block overflow-hidden"><span class="services-line-inner block" style="transform: translateY(105%);">Auctions</span></span><span class="services-line block overflow-hidden"><span class="services-line-inner block" style="transform: translateY(105%);">Expert Advice &</span></span><span class="services-line block overflow-hidden"><span class="services-line-inner block" style="transform: translateY(105%);">Curated Exhibitions</span></span></>
           : <><span class="services-line block overflow-hidden"><span class="services-line-inner block" style="transform: translateY(105%);">Ventes aux Enchères</span></span><span class="services-line block overflow-hidden"><span class="services-line-inner block" style="transform: translateY(105%);">Conseils d'Experts &</span></span><span class="services-line block overflow-hidden"><span class="services-line-inner block" style="transform: translateY(105%);">Expositions Organisées</span></span></>
@@ -29,37 +31,42 @@ const services = [
       </h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {services.map((svc) => (
-        <a
-          href="#contact-cta"
-          data-scroll-link
-          class="service-card image-glide-left relative group aspect-[3/4] overflow-hidden cursor-pointer"
-          data-cursor="link"
-          data-magnetic
-          data-magnetic-radius="120"
-          data-magnetic-amp="14"
-          data-magnetic-inner=".service-card__title-wrap"
-          data-magnetic-inner-amp="6"
-        >
-          <div class="absolute inset-0 z-0">
-            <img src={svc.img} alt={svc.title} class="service-card__img w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700 ease-out" loading="lazy" />
+    <div class="services-rows flex flex-col">
+      {services.map((svc, i) => (
+        <div class={`service-row group relative flex flex-col overflow-hidden ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+             data-service-index={i}
+             style="perspective: var(--perspective-card); border-top: 1px solid rgba(244,239,230,0.07);">
+
+          <div class="service-img-wrap relative w-full md:w-[55%] overflow-hidden" style="min-height: 320px;">
+            <img src={svc.img} alt={svc.title}
+                 class="service-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                 style="aspect-ratio: 16/10;" loading="lazy" />
+            <div class="absolute inset-0 pointer-events-none"
+                 style={`background: linear-gradient(${i % 2 === 0 ? 'to right' : 'to left'}, rgba(10,10,10,0.35) 0%, transparent 42%);`}></div>
+            <span class="absolute top-5 left-5 font-sans text-[10px] tracking-[0.3em] text-ivoire/35">
+              {String(svc.id).padStart(2, '0')}
+            </span>
           </div>
 
-          <div class="absolute inset-0 z-10 flex flex-col justify-end p-8 bg-gradient-to-t from-noir-orfevre/90 to-transparent">
-            <div class="service-card__title-wrap">
-              <h3 class="text-2xl font-serif text-or-clair transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                {svc.title}
-              </h3>
-              <div class="w-12 h-px bg-or-fonce mt-6 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 delay-100"></div>
-              <span class="service-card__cta mt-5 inline-flex items-center gap-3 font-sans text-[10px] uppercase tracking-[0.22em] text-ivoire/80">
-                {lang === 'en' ? 'Enquire' : 'Demander'}
-                <span aria-hidden="true">+</span>
-              </span>
-            </div>
+          <div class="service-text-panel flex flex-col justify-center w-full md:w-[45%] px-8 md:px-14 lg:px-16 py-12 md:py-20">
+            <h3 class="font-serif text-or-clair mb-4 leading-tight tracking-tight"
+                style="font-size: clamp(2rem, 3.5vw, 3.5rem); font-weight: 300;">
+              {svc.title}
+            </h3>
+            <div class="service-rule w-0 h-px bg-or-fonce mb-6 opacity-60"></div>
+            <p class="font-sans text-sm md:text-base text-ivoire/55 leading-relaxed max-w-sm mb-8">{svc.desc}</p>
+            <a href="#contact-cta" data-scroll-link
+               class="service-cta inline-flex items-center gap-3 font-sans text-[10px] uppercase tracking-[0.28em] text-or-fonce w-fit">
+              <span class="service-cta-line w-6 h-px bg-or-fonce transition-all duration-500"></span>
+              {lang === 'en' ? 'Enquire' : 'Demander'}
+              <svg class="w-3 h-3 transition-transform duration-400" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
           </div>
-        </a>
+        </div>
       ))}
+      <div style="border-bottom: 1px solid rgba(244,239,230,0.07);"></div>
     </div>
 
   </div>
@@ -79,101 +86,71 @@ const services = [
           el.style.transform = "none"; el.style.opacity = "1";
         });
       } else {
-        // Label fade-in
         const label = section.querySelector<HTMLElement>(".services-label");
-        if (label) {
-          gsap.to(label, { opacity: 1, duration: 0.7, ease: "power3.out",
-            scrollTrigger: { trigger: section, start: "top 80%", once: true } });
-        }
+        if (label) gsap.to(label, { opacity: 1, duration: 0.7, ease: "power3.out",
+          scrollTrigger: { trigger: section, start: "top 82%", once: true } });
 
-        // Headline : chaque ligne remonte depuis le bas (masquée par overflow-hidden)
-        const lineInners = section.querySelectorAll<HTMLElement>(".services-line-inner");
-        lineInners.forEach((el, i) => {
-          gsap.to(el, {
-            y: "0%", duration: 1.1, ease: "power4.out",
-            delay: i * 0.12,
-            scrollTrigger: { trigger: section, start: "top 78%", once: true },
-          });
+        section.querySelectorAll<HTMLElement>(".services-line-inner").forEach((el, i) => {
+          gsap.to(el, { y: "0%", duration: 1.15, ease: "power4.out", delay: i * 0.12,
+            scrollTrigger: { trigger: section, start: "top 80%", once: true } });
         });
       }
 
-      // Cards reveal : leger decalage vertical + profondeur pour garder le rythme editorial.
-      gsap.fromTo(".service-card",
-        { x: -90, opacity: 0, rotateY: -4, clipPath: "inset(0% 14% 0% 0%)" },
-        {
-          x: 0, opacity: 1, rotateY: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 1.05, stagger: 0.18, ease: "power4.out",
-          scrollTrigger: { trigger: "#services", start: "top 70%" }
+      section.querySelectorAll<HTMLElement>(".service-row").forEach((row, i) => {
+        if (!reduced) {
+          const fromX = i % 2 === 0 ? -70 : 70;
+          gsap.fromTo(row,
+            { opacity: 0, x: fromX, rotateY: i % 2 === 0 ? -5 : 5 },
+            { opacity: 1, x: 0, rotateY: 0, duration: 1.1, ease: "power4.out",
+              scrollTrigger: { trigger: row, start: "top 80%", once: true } }
+          );
         }
-      );
+        const rule = row.querySelector<HTMLElement>(".service-rule");
+        if (rule) {
+          gsap.to(rule, { width: "3.5rem", duration: 0.7, ease: "power2.inOut", delay: 0.35,
+            scrollTrigger: { trigger: row, start: "top 78%", once: true } });
+        }
+      });
+
+      // CTA arrow hover
+      section.querySelectorAll<HTMLElement>(".service-cta").forEach(cta => {
+        const line = cta.querySelector<HTMLElement>(".service-cta-line");
+        const arrow = cta.querySelector("svg");
+        cta.addEventListener("mouseenter", () => {
+          if (line) gsap.to(line, { width: "2.5rem", duration: 0.4, ease: "power2.out" });
+          if (arrow) gsap.to(arrow, { x: 3, duration: 0.4, ease: "power2.out" });
+        });
+        cta.addEventListener("mouseleave", () => {
+          if (line) gsap.to(line, { width: "1.5rem", duration: 0.4, ease: "power2.out" });
+          if (arrow) gsap.to(arrow, { x: 0, duration: 0.4, ease: "power2.out" });
+        });
+      });
+
       void ScrollTrigger;
     };
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setup, { once: true });
-    } else {
-      setup();
-    }
+    } else { setup(); }
   }
 </script>
 
 <style>
-  .service-card__title-wrap { will-change: transform; }
+  .service-row { will-change: transform, opacity; transform-style: preserve-3d; position: relative; }
+  .service-img { will-change: transform; }
+  .service-img-wrap { overflow: hidden; }
   .services-line-inner { will-change: transform; }
-  .service-card {
-    isolation: isolate;
-    transform-style: preserve-3d;
-    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.18);
-  }
-  .service-card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    opacity: 0;
-    background:
-      radial-gradient(circle at 50% 0%, rgba(212, 184, 134, 0.24), transparent 42%),
-      linear-gradient(135deg, rgba(244, 239, 230, 0.12), transparent 38%);
-    mix-blend-mode: screen;
-    transition: opacity 0.55s ease;
-  }
-  .service-card:hover::after,
-  .service-card:focus-visible::after {
-    opacity: 1;
-  }
-  .service-card__cta {
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.45s ease, transform 0.45s ease;
-  }
-  .service-card:hover .service-card__cta,
-  .service-card:focus-visible .service-card__cta {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .service-rule { will-change: width; }
+
   @media (max-width: 767px) {
-    #services {
-      padding-block: 5.5rem;
-    }
-
-    .service-card {
-      min-height: 58vh;
-      border: 1px solid rgba(244, 239, 230, 0.12);
-      background: rgba(244, 239, 230, 0.04);
-      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-
-    .service-card__title-wrap {
-      padding: 0.85rem;
-      border: 1px solid rgba(212, 184, 134, 0.16);
-      background: rgba(10, 10, 10, 0.34);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
+    .services-section { padding-block: 4rem; }
+    .service-img-wrap { min-height: 260px; aspect-ratio: 4/3; }
+    .service-text-panel { padding: 1.5rem 1.25rem 2rem; }
+    .services-headline { font-size: clamp(2.4rem, 11vw, 4rem) !important; }
   }
+
   @media (prefers-reduced-motion: reduce) {
     .services-line-inner { transform: none !important; }
+    .service-row { transform: none !important; opacity: 1 !important; }
   }
 </style>

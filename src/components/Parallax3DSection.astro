@@ -1,0 +1,181 @@
+---
+// Section interstitielle Parallax 3D — 3 couches Z d'œuvres flottantes
+// pilotées par ScrollTrigger scrub. Intercalée entre Gallery et History.
+
+import fr from '../i18n/fr.json';
+import en from '../i18n/en.json';
+
+const { lang } = Astro.props;
+
+const headline = lang === 'en' ? "Heritage" : "Héritage";
+const sub = lang === 'en'
+  ? "Where art, materials and time become legacy."
+  : "Là où l'art, matériaux et temps deviennent héritage.";
+---
+
+<section class="parallax3d-section relative bg-noir-orfevre overflow-hidden" id="parallax3d"
+         style="height: 200vh;">
+
+  <div class="parallax3d-pin sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center"
+       style="perspective: 1200px; transform-style: preserve-3d;">
+
+    <!-- Layer 3 : fond — grande œuvre floue -->
+    <div class="p3d-layer p3d-layer-back absolute"
+         style="width:72vw; max-width:800px; aspect-ratio:3/4; z-index:1; transform: translateZ(-280px) scale(1.35);">
+      <img src="/images/about/image_8.jpg" alt=""
+           class="w-full h-full object-cover rounded-[20px] opacity-50"
+           style="filter: blur(3px);" loading="lazy" aria-hidden="true" />
+    </div>
+
+    <!-- Layer 2 : milieu — œuvre principale avec cadre or -->
+    <div class="p3d-layer p3d-layer-mid absolute"
+         style="width:44vw; max-width:520px; aspect-ratio:3/4; z-index:2; transform: translateZ(-100px) translateX(8vw);">
+      <div class="w-full h-full relative rounded-[18px] overflow-hidden"
+           style="box-shadow: 0 40px 120px rgba(0,0,0,0.55), 0 0 0 1px rgba(184,147,90,0.3);">
+        <img src="/images/about/image_10.jpg" alt=""
+             class="w-full h-full object-cover" loading="lazy" aria-hidden="true" />
+        <!-- Gold frame inner border -->
+        <div class="absolute inset-[10px] border border-or-fonce/30 rounded-[12px] pointer-events-none"></div>
+      </div>
+    </div>
+
+    <!-- Layer 1 : avant-plan — petite vignette label -->
+    <div class="p3d-layer p3d-layer-front absolute"
+         style="width:22vw; max-width:240px; aspect-ratio:3/4; z-index:3; transform: translateZ(60px) translateX(-24vw) translateY(8vh);">
+      <div class="w-full h-full relative rounded-[14px] overflow-hidden"
+           style="box-shadow: 0 28px 80px rgba(0,0,0,0.6);">
+        <img src="/images/about/image_12.jpg" alt=""
+             class="w-full h-full object-cover opacity-80" loading="lazy" aria-hidden="true" />
+      </div>
+    </div>
+
+    <!-- Texte central (zoome de l'arrière) -->
+    <div class="p3d-text absolute inset-0 flex flex-col items-center justify-center text-center z-10 pointer-events-none px-6"
+         style="transform: translateZ(0px); opacity: 0;">
+      <h2 class="font-serif text-ivoire leading-[0.88] tracking-[-0.04em]"
+          style="font-size: clamp(5rem, 14vw, 16rem); text-shadow: 0 8px 60px rgba(0,0,0,0.8);">
+        {headline}
+      </h2>
+      <p class="font-sans text-ivoire/60 text-sm md:text-base tracking-[0.18em] uppercase mt-6 max-w-md">
+        {sub}
+      </p>
+    </div>
+
+    <!-- Vignette edges -->
+    <div class="absolute inset-0 z-[4] pointer-events-none"
+         style="background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(10,10,10,0.75) 100%);"></div>
+
+  </div>
+</section>
+
+<script>
+  import { gsap, ScrollTrigger } from "../lib/gsap-config";
+
+  if (typeof window !== "undefined") {
+    const setup = () => {
+      const section = document.getElementById("parallax3d");
+      if (!section) return;
+
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
+      if (isMobile) {
+        // Sur mobile : collapse la section, simple parallaxe image
+        section.style.height = "100vh";
+        const back = section.querySelector<HTMLElement>(".p3d-layer-back");
+        const mid  = section.querySelector<HTMLElement>(".p3d-layer-mid");
+        const front = section.querySelector<HTMLElement>(".p3d-layer-front");
+        if (back)  { back.style.transform  = "none"; back.style.width  = "100vw"; back.style.zIndex = "1"; }
+        if (mid)   { mid.style.transform   = "none"; mid.style.width   = "72vw";  mid.style.zIndex = "2"; }
+        if (front) { front.style.display   = "none"; }
+        const text = section.querySelector<HTMLElement>(".p3d-text");
+        if (text) {
+          text.style.opacity = "1";
+          text.style.transform = "none";
+        }
+        return;
+      }
+
+      if (reduced) {
+        const text = section.querySelector<HTMLElement>(".p3d-text");
+        if (text) { text.style.opacity = "1"; text.style.transform = "none"; }
+        return;
+      }
+
+      const layerBack  = section.querySelector<HTMLElement>(".p3d-layer-back");
+      const layerMid   = section.querySelector<HTMLElement>(".p3d-layer-mid");
+      const layerFront = section.querySelector<HTMLElement>(".p3d-layer-front");
+      const textEl     = section.querySelector<HTMLElement>(".p3d-text");
+
+      // Scroll-driven: layers drift in Z and Y as user scrolls through section
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1.2,
+        onUpdate: (self) => {
+          const p = self.progress; // 0 → 1
+
+          // Back layer: moves from further back to slightly forward
+          const backZ   = -280 + p * 120;
+          const backY   = -p * 60;
+          if (layerBack) layerBack.style.transform = `translateZ(${backZ}px) scale(${1.35 - p * 0.15}) translateY(${backY}px)`;
+
+          // Mid layer: slow drift
+          const midZ    = -100 + p * 50;
+          const midX    = 8 - p * 4; // vw approximation in px using rough calc
+          if (layerMid) layerMid.style.transform = `translateZ(${midZ}px) translateX(${midX}vw) translateY(${-p * 30}px)`;
+
+          // Front layer: moves up faster (foreground parallax)
+          if (layerFront) layerFront.style.transform = `translateZ(60px) translateX(-24vw) translateY(${8 - p * 22}vh)`;
+
+          // Text: zooms in from scale 0.4 → 1 and fades in 0→0.35, holds, fades out 0.78→1
+          let tOpacity = 0;
+          if (p < 0.12) tOpacity = p / 0.12;
+          else if (p < 0.72) tOpacity = 1;
+          else tOpacity = 1 - (p - 0.72) / 0.28;
+          tOpacity = Math.max(0, Math.min(1, tOpacity));
+
+          const tScale = 0.55 + p * 0.6;
+          if (textEl) {
+            textEl.style.opacity = String(tOpacity);
+            textEl.style.transform = `translateZ(0px) scale(${Math.min(1, tScale)})`;
+          }
+        },
+      });
+
+      void ScrollTrigger;
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", setup, { once: true });
+    } else { setup(); }
+  }
+</script>
+
+<style>
+  .parallax3d-section { color: var(--ivoire); }
+
+  .parallax3d-pin { transform-style: preserve-3d; }
+
+  .p3d-layer {
+    will-change: transform;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+
+  .p3d-text {
+    will-change: transform, opacity;
+    font-weight: 300;
+  }
+
+  @media (max-width: 767px) {
+    .parallax3d-section { height: 100vh !important; }
+    .parallax3d-pin { flex-direction: column; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .p3d-layer { transform: none !important; }
+    .p3d-text { opacity: 1 !important; transform: none !important; }
+  }
+</style>

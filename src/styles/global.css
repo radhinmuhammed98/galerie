@@ -23,8 +23,12 @@
     --brun-vernis: #1A1210;
     --ivoire-chaud: #EFE5D5;
     --ombre-tableau: #130F0C;
-    --radius-ui: 18px;
-    --radius-ui-lg: 24px;
+    --radius-ui: 20px;
+    --radius-ui-lg: 28px;
+    /* 3D perspective tokens */
+    --perspective-hero: 1100px;
+    --perspective-card: 800px;
+    --perspective-deep: 1400px;
     color-scheme: dark;
   }
 
@@ -50,7 +54,7 @@
   }
 
   html.is-mobile-device {
-    scroll-padding-top: 112px;
+    scroll-padding-top: 0px;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -61,7 +65,7 @@
     @apply bg-or-fonce text-noir-orfevre;
   }
 
-  /* Lenis smooth scroll utilities */
+  /* Lenis smooth scroll */
   html.lenis { height: auto; }
   .lenis.lenis-smooth { scroll-behavior: auto !important; }
   .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
@@ -78,6 +82,7 @@
     }
   }
 
+  /* Mobile global */
   @media (max-width: 767px) {
     body {
       overflow-x: hidden;
@@ -85,7 +90,6 @@
         radial-gradient(circle at 50% -10%, rgba(212, 184, 134, 0.12), transparent 34rem),
         #0A0A0A;
     }
-
     .cursor-root {
       display: none !important;
     }
@@ -161,7 +165,7 @@
 }
 
 @layer components {
-  /* Underline élégant : trace de gauche à droite au hover, retrace de droite à gauche au sortir */
+  /* Underline élégant */
   .link-fancy {
     position: relative;
     display: inline-block;
@@ -183,7 +187,6 @@
     transform: scaleX(1);
     transform-origin: left center;
   }
-  /* Variante or-fonce explicite (à utiliser si la couleur de texte n'est pas désirée pour l'underline) */
   .link-fancy--gold::after { background: #B8935A; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -205,9 +208,9 @@
       linear-gradient(180deg, #130F0C 0%, #0A0A0A 58%, #120D0B 100%);
   }
 
+  /* Rounded surfaces */
   .rounded-surface,
   .nav-shell,
-  .mobile-nav-menu,
   .service-card,
   .events-card,
   .gallery-item,
@@ -233,12 +236,43 @@
     will-change: transform, opacity, clip-path;
   }
 
+  /* =====================================================
+     3D UTILITIES
+     ===================================================== */
+
+  /* Perspective wrapper */
+  .perspective-hero { perspective: var(--perspective-hero); }
+  .perspective-card { perspective: var(--perspective-card); }
+  .perspective-deep { perspective: var(--perspective-deep); }
+
+  /* preserve-3d */
+  .preserve-3d { transform-style: preserve-3d; }
+
+  /* 3D entry initial states (set via JS too, but CSS covers no-JS) */
+  .entry-3d {
+    opacity: 0;
+    transform: perspective(1000px) rotateX(-28deg) translateZ(-180px);
+    will-change: transform, opacity;
+  }
+  .entry-3d.is-visible {
+    opacity: 1;
+    transform: perspective(1000px) rotateX(0deg) translateZ(0px);
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+  }
+
+  /* Depth layers for parallax */
+  .depth-layer-1 { --depth-z: -60px; }
+  .depth-layer-2 { --depth-z: -120px; }
+  .depth-layer-3 { --depth-z: -220px; }
+
+  /* =====================================================
+     APPLE-STYLE BUTTON
+     ===================================================== */
   .button-sheen {
     position: relative;
     isolation: isolate;
     overflow: hidden;
   }
-
   .button-sheen::after {
     content: "";
     position: absolute;
@@ -250,13 +284,87 @@
     transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 2;
   }
-
   .button-sheen:hover::after,
   .button-sheen:focus-visible::after {
     left: 120%;
   }
 
+  /* =====================================================
+     MOBILE BOTTOM NAV
+     ===================================================== */
+  .bottom-nav {
+    display: none;
+  }
+
   @media (max-width: 767px) {
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      height: calc(64px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      align-items: flex-start;
+      justify-content: space-around;
+      border-top: 1px solid rgba(244, 239, 230, 0.10);
+      background: rgba(10, 10, 10, 0.78);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+    }
+
+    .bottom-nav__tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      flex: 1;
+      height: 64px;
+      font-family: var(--font-sans);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(244, 239, 230, 0.45);
+      transition: color 0.25s ease;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      border: none;
+      background: none;
+      padding: 0;
+      text-decoration: none;
+    }
+
+    .bottom-nav__tab.is-active {
+      color: #D4B886;
+    }
+
+    .bottom-nav__icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .bottom-nav__tab.is-active .bottom-nav__dot {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #D4B886;
+    }
+
+    /* Space at bottom of page for bottom nav */
+    body {
+      padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    }
+
     :root {
       --radius-ui: 16px;
       --radius-ui-lg: 20px;
@@ -272,5 +380,76 @@
     .cta-right {
       border-radius: var(--radius-ui) !important;
     }
+  }
+
+  /* =====================================================
+     CINEMATIC LETTERBOX BARS
+     ===================================================== */
+  .letterbox-bar-top,
+  .letterbox-bar-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 8;
+    background: #0A0A0A;
+    pointer-events: none;
+    transform: scaleY(0);
+    will-change: transform;
+  }
+  .letterbox-bar-top {
+    top: 0;
+    height: 8vh;
+    transform-origin: top center;
+  }
+  .letterbox-bar-bottom {
+    bottom: 0;
+    height: 8vh;
+    transform-origin: bottom center;
+  }
+  @media (max-width: 767px) {
+    .letterbox-bar-top,
+    .letterbox-bar-bottom { height: 5vh; }
+  }
+
+  /* =====================================================
+     GOLD SEPARATOR LINE (animated)
+     ===================================================== */
+  .gold-separator {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #B8935A 40%, #D4B886 50%, #B8935A 60%, transparent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+  .gold-separator.is-drawn {
+    transform: scaleX(1);
+    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* =====================================================
+     PERSPECTIVE GRID FLOOR (hero)
+     ===================================================== */
+  .perspective-grid-floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 45%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    transform-origin: bottom center;
+    transform: perspective(600px) rotateX(60deg) scaleX(1.8);
+    opacity: 0;
+    will-change: opacity, transform;
+    background-image:
+      linear-gradient(to right, rgba(184, 147, 90, 0.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(184, 147, 90, 0.12) 1px, transparent 1px);
+    background-size: 8vw 4vw;
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+    mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
+  }
+  @media (max-width: 767px) {
+    .perspective-grid-floor { display: none; }
   }
 }

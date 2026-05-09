@@ -6,26 +6,46 @@ const { lang } = Astro.props;
 const t = lang === 'en' ? en : fr;
 ---
 
-<section class="history-section py-32 px-6 md:px-12 text-noir-orfevre relative overflow-hidden" id="history">
-  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+<section class="history-section relative overflow-hidden" id="history">
 
-    <div class="md:col-span-5 relative group history-img-container image-glide-left">
-      <div class="aspect-[3/4] w-full overflow-hidden">
+  <!-- Gold separator line (draws on scroll) -->
+  <div class="gold-separator history-gold-line mx-6 md:mx-12 mb-20 md:mb-28" style="margin-top: 0;"></div>
+
+  <div class="max-w-7xl mx-auto px-6 md:px-12 pb-28 md:pb-40 grid grid-cols-1 md:grid-cols-12 gap-14 items-center">
+
+    <!-- Image column — 3D rotateY reveal -->
+    <div class="md:col-span-5 relative group history-img-container" style="perspective: var(--perspective-card);">
+      <div class="aspect-[3/4] w-full overflow-hidden rounded-[20px] history-img-frame" style="transform: rotateY(-18deg); opacity: 0; transform-style: preserve-3d;">
         <img
           src="/images/about/image_14.jpg"
           alt="Histoire de la galerie"
           class="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 history-img"
           loading="lazy"
         />
+        <!-- Gold corner accent -->
+        <div class="absolute bottom-0 left-0 right-0 h-1/3 pointer-events-none"
+             style="background: linear-gradient(to top, rgba(10,10,10,0.55) 0%, transparent 100%);"></div>
       </div>
-      <div class="absolute -bottom-6 -right-6 w-32 h-32 border-b border-r border-or-fonce opacity-50"></div>
+      <!-- Corner decoration -->
+      <div class="absolute -bottom-5 -right-5 w-24 h-24 border-b border-r border-or-fonce opacity-40 pointer-events-none rounded-br-[8px]"></div>
+      <!-- Year ghost text -->
+      <div class="history-year-ghost absolute -top-4 -left-6 font-serif font-light text-noir-orfevre/[0.06] select-none pointer-events-none leading-none"
+           style="font-size: clamp(8rem, 22vw, 18rem);" aria-hidden="true">
+        {lang === 'en' ? '1990' : '1990'}
+      </div>
     </div>
 
+    <!-- Text column — lines surface from depth -->
     <div class="md:col-span-6 md:col-start-7 history-text-container">
-      <h2 class="history-h2 text-4xl md:text-5xl font-serif mb-8 leading-tight">
+      <p class="history-label font-sans text-[10px] uppercase tracking-[0.35em] text-or-fonce mb-6 opacity-0">
+        {lang === 'en' ? 'Our story' : 'Notre histoire'}
+      </p>
+      <h2 class="history-h2 font-serif mb-8 leading-[0.95] tracking-tight" style="font-size: clamp(2.5rem, 5vw, 5.5rem);">
         {t['history.h2']}
       </h2>
-      <p class="history-paragraph font-sans text-lg leading-relaxed text-gray-700">
+      <!-- Animated gold rule -->
+      <div class="history-rule w-0 h-px bg-or-fonce mb-8 opacity-60"></div>
+      <p class="history-paragraph font-sans text-base md:text-lg leading-relaxed text-gray-700">
         {t['history.text']}
       </p>
     </div>
@@ -36,7 +56,6 @@ const t = lang === 'en' ? en : fr;
 <script>
   import { gsap, ScrollTrigger } from "../lib/gsap-config";
   import { revealText } from "../lib/text-reveal";
-  import { revealImage } from "../lib/image-reveal";
 
   if (typeof window !== "undefined") {
     const setup = () => {
@@ -46,71 +65,65 @@ const t = lang === 'en' ? en : fr;
 
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // 1. Curtain reveal vertical sur l'image (descend de haut en bas)
-      const imageFrame = section.querySelector<HTMLElement>(".history-img-container .aspect-\\[3\\/4\\]");
-      const imageWrap = section.querySelector<HTMLElement>(".history-img-container");
-      const img = section.querySelector<HTMLElement>(".history-img");
-      if (imageWrap && !reduced) {
-        gsap.fromTo(
-          imageWrap,
-          { x: -120, opacity: 0, rotate: -1.4, clipPath: "inset(0% 18% 0% 0%)" },
-          {
-            x: 0,
-            opacity: 1,
-            rotate: 0,
-            clipPath: "inset(0% 0% 0% 0%)",
-            duration: 1.25,
-            ease: "power4.out",
-            scrollTrigger: { trigger: section, start: "top 72%", once: true },
-          }
-        );
+      // --- Gold separator line draws ---
+      const goldLine = section.querySelector<HTMLElement>(".history-gold-line");
+      if (goldLine) {
+        ScrollTrigger.create({
+          trigger: section,
+          start: "top 82%",
+          once: true,
+          onEnter: () => goldLine.classList.add("is-drawn"),
+        });
+      }
 
-        gsap.to(imageWrap, {
-          y: -34,
+      // --- Image: 3D rotateY reveal ---
+      const imgFrame = section.querySelector<HTMLElement>(".history-img-frame");
+      if (imgFrame && !reduced) {
+        gsap.to(imgFrame, {
+          rotateY: 0,
+          opacity: 1,
+          duration: 1.5,
+          ease: "power4.out",
+          scrollTrigger: { trigger: section, start: "top 72%", once: true },
+        });
+
+        // Subtle ongoing parallax after reveal
+        gsap.to(section.querySelector(".history-img-container"), {
+          y: -36,
           ease: "none",
           scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 1.2 },
         });
+      } else if (imgFrame) {
+        imgFrame.style.opacity = "1";
+        imgFrame.style.transform = "none";
       }
 
-      if (imageFrame && img) {
-        revealImage(
-          imageFrame,
-          {
-            direction: "curtain-top",
-            duration: 1.4,
-            coverColor: "#F4EFE6",
-            scaleFrom: 1.04,
-            scaleDuration: 1.6,
-            scrollTrigger: { start: "top 75%", once: true },
-          },
-          img
-        );
+      // --- Label fade in ---
+      const label = section.querySelector<HTMLElement>(".history-label");
+      if (label) {
+        gsap.to(label, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
+          scrollTrigger: { trigger: section, start: "top 76%", once: true } });
       }
 
-      // 2. Split text H2 (mots, blur)
+      // --- H2 word reveal ---
       const h2 = section.querySelector<HTMLElement>(".history-h2");
       if (h2) {
-        revealText(h2, {
-          mode: "words",
-          stagger: 0.06,
-          duration: 1.1,
-          delay: 0.3,
-          scrollTrigger: { start: "top 80%", once: true },
-        });
+        revealText(h2, { mode: "words", stagger: 0.06, duration: 1.1, delay: 0.2,
+          scrollTrigger: { start: "top 80%", once: true } });
       }
 
-      // 3. Paragraphe : split par mots, plus rapide, encore plus subtil
+      // --- Gold rule draws ---
+      const rule = section.querySelector<HTMLElement>(".history-rule");
+      if (rule && !reduced) {
+        gsap.to(rule, { width: "4.5rem", duration: 0.8, ease: "power2.inOut",
+          scrollTrigger: { trigger: section, start: "top 78%", once: true } });
+      }
+
+      // --- Paragraph word reveal ---
       const p = section.querySelector<HTMLElement>(".history-paragraph");
       if (p) {
-        revealText(p, {
-          mode: "words",
-          stagger: 0.025,
-          duration: 0.8,
-          yPercent: 60,
-          blurPx: 6,
-          delay: 0.5,
-          scrollTrigger: { start: "top 80%", once: true },
-        });
+        revealText(p, { mode: "words", stagger: 0.022, duration: 0.75, yPercent: 55, blurPx: 5, delay: 0.45,
+          scrollTrigger: { start: "top 80%", once: true } });
       }
 
       void ScrollTrigger;
@@ -118,44 +131,53 @@ const t = lang === 'en' ? en : fr;
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setup, { once: true });
-    } else {
-      setup();
-    }
+    } else { setup(); }
   }
 </script>
 
 <style>
   .history-section {
     background:
-      radial-gradient(circle at 18% 12%, rgba(184, 147, 90, 0.18), transparent 32rem),
-      radial-gradient(circle at 84% 18%, rgba(143, 95, 61, 0.12), transparent 26rem),
+      radial-gradient(circle at 18% 12%, rgba(184, 147, 90, 0.16), transparent 32rem),
+      radial-gradient(circle at 84% 18%, rgba(143, 95, 61, 0.10), transparent 26rem),
       linear-gradient(180deg, #EFE5D5 0%, #F4EFE6 48%, #E9DDC9 100%);
+    padding-top: 6rem;
+  }
+
+  .history-img-frame {
+    will-change: transform, opacity;
+    box-shadow: 0 40px 110px rgba(10, 10, 10, 0.16);
+    transform-origin: left center;
   }
 
   .history-img-container {
-    will-change: transform, opacity, clip-path;
+    will-change: transform;
   }
 
-  .history-img-container .aspect-\[3\/4\] {
-    box-shadow: 0 34px 100px rgba(10, 10, 10, 0.18);
+  .history-year-ghost {
+    will-change: transform;
+    letter-spacing: -0.05em;
+  }
+
+  .history-rule {
+    will-change: width;
   }
 
   @media (max-width: 767px) {
-    .history-section {
-      padding-block: 5.5rem;
+    .history-section { padding-top: 4rem; padding-bottom: 5rem; }
+
+    .history-img-frame {
+      box-shadow: 0 22px 64px rgba(10, 10, 10, 0.12);
     }
 
-    .history-img-container .aspect-\[3\/4\] {
-      border: 1px solid rgba(10, 10, 10, 0.1);
-      box-shadow: 0 24px 68px rgba(10, 10, 10, 0.14);
+    .history-year-ghost {
+      font-size: 40vw !important;
+      top: -1rem;
+      left: -1rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .history-img-container {
-      transform: none !important;
-      opacity: 1 !important;
-      clip-path: none !important;
-    }
+    .history-img-frame { transform: none !important; opacity: 1 !important; }
   }
 </style>

@@ -7,49 +7,75 @@ const t = lang === 'en' ? en : fr;
 
 interface GalleryItem { src: string; caption?: string; }
 const items: GalleryItem[] = [
-  { src: '/images/about/image_5.jpg', caption: lang === 'en' ? 'Goldsmith workshop' : 'Atelier d\'orfevrerie' },
-  { src: '/images/about/image_6.jpg', caption: lang === 'en' ? 'Engraving detail' : 'Detail de gravure' },
-  { src: '/images/about/image_7.jpg', caption: lang === 'en' ? 'Private collection piece' : 'Piece de la collection privee' },
-  { src: '/images/about/image_8.jpg', caption: lang === 'en' ? 'Opening night' : 'Vernissage' },
+  { src: '/images/about/image_5.jpg',  caption: lang === 'en' ? 'Goldsmith workshop'    : 'Atelier d\'orfèvrerie' },
+  { src: '/images/about/image_6.jpg',  caption: lang === 'en' ? 'Engraving detail'      : 'Détail de gravure' },
+  { src: '/images/about/image_7.jpg',  caption: lang === 'en' ? 'Private collection'    : 'Collection privée' },
+  { src: '/images/about/image_8.jpg',  caption: lang === 'en' ? 'Opening night'         : 'Vernissage' },
 ];
 ---
 
-<section class="gallery-section py-32 px-6 md:px-12 text-noir-orfevre relative overflow-hidden" id="gallery">
-  <div class="max-w-7xl mx-auto">
-    <div class="flex flex-col md:flex-row justify-between items-end mb-24">
-      <h2 class="gallery-h2 text-5xl md:text-7xl font-serif tracking-tighter">
-        {t['savoir.text']}
-      </h2>
-      <p class="font-sans text-sm uppercase tracking-widest text-or-fonce mt-8 md:mt-0 max-w-xs text-right" data-text-reveal="words">
+<section class="gallery-section relative overflow-hidden" id="gallery">
+
+  <!-- Ghost text background -->
+  <div class="gallery-ghost-text" aria-hidden="true">GALERIE</div>
+
+  <div class="gallery-inner max-w-[1800px] mx-auto px-6 md:px-12 pt-28 md:pt-40 pb-24 md:pb-36">
+
+    <!-- Header -->
+    <div class="gallery-header flex flex-col md:flex-row justify-between items-end mb-16 md:mb-24">
+      <div>
+        <p class="gallery-label font-sans text-[10px] uppercase tracking-[0.35em] text-or-fonce mb-5 opacity-0">
+          {lang === 'en' ? 'Our collection' : 'Notre collection'}
+        </p>
+        <h2 class="gallery-h2 font-serif tracking-tighter leading-[0.9]" style="font-size: clamp(3.5rem, 7vw, 8rem);">
+          {t['savoir.text']}
+        </h2>
+      </div>
+      <p class="gallery-sub font-sans text-xs uppercase tracking-[0.28em] text-or-fonce mt-8 md:mt-0 max-w-xs text-right opacity-0">
         {t['quote.text']}
       </p>
     </div>
 
-    <div class="gallery-grid grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
+    <!-- Grid desktop: 2-col staggered | mobile: 1-col -->
+    <div class="gallery-grid grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 lg:gap-28">
       {items.map((item, index) => (
         <div
-          class={`gallery-item image-glide-left relative overflow-hidden group ${index === 0 ? 'is-active' : ''} ${index % 2 !== 0 ? 'md:mt-32' : ''}`}
+          class={`gallery-item relative overflow-hidden group cursor-pointer ${index % 2 !== 0 ? 'md:mt-36' : ''}`}
           data-cursor="image"
           data-cursor-label="voir"
           data-caption={item.caption}
           tabindex="0"
           role="button"
           aria-label={item.caption ?? 'Savoir-faire'}
+          style="perspective: var(--perspective-card);"
         >
-          <div class="aspect-[3/4] w-full bg-gris-pierre relative overflow-hidden">
+          <!-- Card inner (3D tilt target) -->
+          <div class="gallery-card-inner aspect-[3/4] w-full bg-gris-pierre relative overflow-hidden rounded-[20px]" style="transform-style: preserve-3d;">
             <img
               src={item.src}
               alt={item.caption ?? 'Savoir-faire'}
-              class="object-cover w-full h-full parallax-img transition-transform duration-1000 group-hover:scale-105"
+              class="object-cover w-full h-full parallax-img transition-transform duration-700 group-hover:scale-[1.06]"
               loading="lazy"
             />
-            <div class="gallery-item__veil absolute inset-0 bg-or-fonce/0 group-hover:bg-or-fonce/10 transition-colors duration-700 pointer-events-none"></div>
+            <!-- Sheen overlay on hover -->
+            <div class="gallery-card-sheen absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                 style="background: linear-gradient(135deg, rgba(212,184,134,0.12) 0%, transparent 55%);"></div>
+            <!-- Gold veil -->
+            <div class="gallery-item__veil absolute inset-0 bg-or-fonce/0 group-hover:bg-or-fonce/8 transition-colors duration-700 pointer-events-none"></div>
           </div>
+
+          <!-- Caption -->
           {item.caption && (
-            <div class="gallery-item__caption absolute bottom-6 left-6 right-6 text-ivoire opacity-0 translate-y-2 transition-all duration-500 ease-out font-serif italic text-base md:text-lg pointer-events-none">
+            <div class="gallery-item__caption absolute bottom-5 left-5 right-5 text-ivoire opacity-0 translate-y-2 transition-all duration-500 ease-out font-serif italic text-base md:text-lg pointer-events-none px-3 py-2 rounded-[12px]"
+                 style="background: rgba(10,10,10,0.45); backdrop-filter: blur(16px);">
               {item.caption}
             </div>
           )}
+
+          <!-- Index number -->
+          <div class="gallery-item-index absolute top-5 right-5 font-sans text-[10px] tracking-[0.28em] text-ivoire/40 z-10">
+            {String(index + 1).padStart(2, '0')}
+          </div>
         </div>
       ))}
     </div>
@@ -66,213 +92,167 @@ const items: GalleryItem[] = [
       if (!section || section.dataset.galleryBound === "true") return;
       section.dataset.galleryBound = "true";
 
-      const h2 = section.querySelector<HTMLElement>(".gallery-h2");
-      if (h2) {
-        revealLetters(h2, { stagger: 0.025, duration: 0.7, scrollTrigger: { start: "top 80%", once: true } });
-      }
-
-      const items = section.querySelectorAll<HTMLElement>(".gallery-item");
-      const images = section.querySelectorAll<HTMLImageElement>(".parallax-img");
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const isFine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-      if (items.length) {
-        const covers = Array.from(items).map((item) => {
-          const cover = document.createElement("div");
-          cover.className = "gallery-item__reveal-cover";
-          item.appendChild(cover);
-          return cover;
+      // --- Label + sub fade in ---
+      const label = section.querySelector<HTMLElement>(".gallery-label");
+      const sub = section.querySelector<HTMLElement>(".gallery-sub");
+      gsap.to([label, sub], { opacity: 1, y: 0, duration: 0.9, ease: "power3.out", stagger: 0.15,
+        scrollTrigger: { trigger: section, start: "top 80%", once: true } });
+
+      // --- H2 letter reveal ---
+      const h2 = section.querySelector<HTMLElement>(".gallery-h2");
+      if (h2) revealLetters(h2, { stagger: 0.022, duration: 0.65, scrollTrigger: { start: "top 80%", once: true } });
+
+      // --- Items: 3D entry from depth ---
+      const items = section.querySelectorAll<HTMLElement>(".gallery-item");
+      const cardInners = section.querySelectorAll<HTMLElement>(".gallery-card-inner");
+      const images = section.querySelectorAll<HTMLImageElement>(".parallax-img");
+
+      if (!reduced && items.length) {
+        gsap.set(items, { opacity: 0, y: 80, rotateX: -18, z: -120 });
+        gsap.set(images, { scale: 1.1, transformOrigin: "center" });
+
+        gsap.to(items, {
+          opacity: 1, y: 0, rotateX: 0, z: 0,
+          duration: 1.15, stagger: 0.14, ease: "power4.out",
+          scrollTrigger: { trigger: section.querySelector(".gallery-grid") ?? section, start: "top 78%", once: true },
         });
-
-        gsap.set(items, { x: -96, opacity: 0, clipPath: "inset(0% 18% 0% 0%)" });
-        gsap.set(images, { scale: 1.08, transformOrigin: "center" });
-
-        if (reduced) {
-          gsap.set(items, { x: 0, opacity: 1, clipPath: "inset(0% 0% 0% 0%)" });
-          gsap.set(images, { scale: 1 });
-          covers.forEach((cover) => cover.remove());
-        } else {
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: section.querySelector(".gallery-grid") ?? section,
-              start: "top 78%",
-              once: true,
-            },
-          });
-
-          tl.to(items, {
-            x: 0,
-            opacity: 1,
-            clipPath: "inset(0% 0% 0% 0%)",
-            duration: 1.05,
-            stagger: 0.16,
-            ease: "power4.out",
-          })
-          .to(covers, {
-            clipPath: "polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)",
-            duration: 1.2,
-            stagger: 0.16,
-            ease: "expo.out",
-            onComplete: () => covers.forEach((cover) => cover.remove()),
-          }, "<")
-          .to(images, {
-            scale: 1,
-            duration: 1.6,
-            stagger: 0.16,
-            ease: "power2.out",
-          }, "<");
-        }
+        gsap.to(images, { scale: 1, duration: 1.6, stagger: 0.14, ease: "power2.out",
+          scrollTrigger: { trigger: section.querySelector(".gallery-grid") ?? section, start: "top 78%", once: true } });
+      } else if (items.length) {
+        gsap.set(items, { opacity: 1 });
       }
 
-      section.querySelectorAll<HTMLImageElement>(".parallax-img").forEach((img) => {
+      // --- Parallax on images ---
+      images.forEach((img) => {
         if (!img.parentElement) return;
-        gsap.fromTo(img,
-          { y: -30 },
-          {
-            y: 30,
-            ease: "none",
-            scrollTrigger: {
-              trigger: img.parentElement,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: true,
-            },
-          }
-        );
+        gsap.fromTo(img, { y: -28 }, { y: 28, ease: "none",
+          scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true } });
       });
 
-      const activateItem = (active: HTMLElement) => {
-        items.forEach((item) => item.classList.toggle("is-active", item === active));
-      };
+      // --- 3D Mouse tilt on desktop ---
+      if (isFine && !reduced) {
+        items.forEach((item) => {
+          const inner = item.querySelector<HTMLElement>(".gallery-card-inner");
+          if (!inner) return;
+          item.addEventListener("mousemove", (e) => {
+            const rect = item.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width  - 0.5;  // -0.5 → 0.5
+            const y = (e.clientY - rect.top)  / rect.height - 0.5;
+            gsap.to(inner, { rotateY: x * 14, rotateX: -y * 10, z: 20,
+              duration: 0.4, ease: "power2.out", overwrite: "auto" });
+          }, { passive: true });
+          item.addEventListener("mouseleave", () => {
+            gsap.to(inner, { rotateY: 0, rotateX: 0, z: 0, duration: 0.6, ease: "power3.out" });
+          });
+        });
+      }
 
-      const grid = section.querySelector<HTMLElement>(".gallery-grid");
-      grid?.addEventListener("pointermove", (event) => {
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const item = target.closest<HTMLElement>(".gallery-item");
-        if (item) activateItem(item);
-      }, { passive: true });
-
+      // --- Caption reveal on hover ---
       items.forEach((item) => {
         const caption = item.querySelector<HTMLElement>(".gallery-item__caption");
-        const show = () => {
-          activateItem(item);
-          if (caption) gsap.to(caption, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", overwrite: "auto" });
-        };
-
+        const show = () => { if (caption) gsap.to(caption, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", overwrite: "auto" }); };
         item.addEventListener("mouseenter", show);
         item.addEventListener("focus", show);
         item.addEventListener("click", show);
-        item.addEventListener("keydown", (event) => {
-          if (event.key !== "Enter" && event.key !== " ") return;
-          event.preventDefault();
-          show();
-        });
       });
+
+      // --- Ghost text parallax ---
+      const ghost = section.querySelector<HTMLElement>(".gallery-ghost-text");
+      if (ghost && !reduced) {
+        gsap.to(ghost, { y: -60, ease: "none",
+          scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: 1.5 } });
+      }
 
       void ScrollTrigger;
     };
 
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setup, { once: true });
-    } else {
-      setup();
-    }
+    } else { setup(); }
   }
 </script>
 
 <style>
-  .gallery-item {
-    z-index: 1;
-    transform-origin: center;
-    transition:
-      z-index 0s linear 0.18s,
-      box-shadow 0.45s ease,
-      filter 0.45s ease;
-    will-change: transform, opacity;
-  }
-
   .gallery-section {
     background:
-      radial-gradient(circle at 14% 6%, rgba(184, 147, 90, 0.2), transparent 34rem),
-      radial-gradient(circle at 82% 22%, rgba(143, 95, 61, 0.16), transparent 28rem),
+      radial-gradient(circle at 14% 6%, rgba(184, 147, 90, 0.18), transparent 34rem),
+      radial-gradient(circle at 82% 22%, rgba(143, 95, 61, 0.14), transparent 28rem),
       linear-gradient(180deg, #F4EFE6 0%, #EFE5D5 52%, #E9DDC9 100%);
+    color: var(--noir-orfevre);
   }
 
-  .gallery-item.is-active {
-    z-index: 1;
-    transition-delay: 0s;
-    box-shadow: 0 32px 90px rgba(10, 10, 10, 0.22);
-  }
-
-  .gallery-item:not(.is-active) {
-    filter: saturate(0.86) brightness(0.92);
-  }
-
-  .gallery-item__reveal-cover {
+  .gallery-ghost-text {
     position: absolute;
-    inset: 0;
-    z-index: 20;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(14rem, 38vw, 48rem);
+    font-weight: 300;
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    color: #0A0A0A;
+    opacity: 0.032;
     pointer-events: none;
-    background: #F4EFE6;
-    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-    will-change: clip-path;
+    user-select: none;
+    white-space: nowrap;
+    will-change: transform;
+    z-index: 0;
+  }
+
+  .gallery-inner { position: relative; z-index: 1; }
+
+  .gallery-item {
+    transform-style: preserve-3d;
+    will-change: transform, opacity;
+    cursor: pointer;
+  }
+
+  .gallery-card-inner {
+    will-change: transform;
+    transition: box-shadow 0.45s ease;
+    box-shadow: 0 24px 80px rgba(10, 10, 10, 0.14);
+  }
+
+  .gallery-item:hover .gallery-card-inner,
+  .gallery-item:focus-visible .gallery-card-inner {
+    box-shadow: 0 40px 100px rgba(10, 10, 10, 0.26);
   }
 
   .gallery-item__caption {
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
     will-change: opacity, transform;
   }
 
-  .gallery-item.is-active .gallery-item__caption {
-    opacity: 1;
-    transform: translateY(0);
+  .gallery-item-index {
+    font-weight: 300;
   }
 
+  /* Hover: non-hovered items fade */
   @media (hover: hover) and (pointer: fine) {
     .gallery-grid:hover .gallery-item:not(:hover) {
-      filter: saturate(0.78) brightness(0.84);
+      filter: saturate(0.80) brightness(0.90);
+      transition: filter 0.4s ease;
     }
-
-    .gallery-item:hover,
-    .gallery-item:focus-visible {
-      z-index: 20;
-      filter: saturate(1.04) brightness(1);
-    }
+    .gallery-item:hover { filter: saturate(1.04) brightness(1); }
   }
 
   @media (max-width: 767px) {
-    #gallery {
-      padding-block: 5.5rem;
+    #gallery { padding-block: 5rem; }
+
+    .gallery-grid { gap: 1.2rem; }
+
+    .gallery-card-inner {
+      border: 1px solid rgba(10, 10, 10, 0.08);
+      box-shadow: 0 18px 50px rgba(10, 10, 10, 0.10);
     }
 
-    .gallery-grid {
-      gap: 1.4rem;
-    }
-
-    .gallery-item {
-      border: 1px solid rgba(10, 10, 10, 0.1);
-      background: rgba(255, 255, 255, 0.22);
-      box-shadow: 0 20px 54px rgba(10, 10, 10, 0.12);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-
-    .gallery-item__caption {
-      left: 1rem;
-      right: 1rem;
-      bottom: 1rem;
-      padding: 0.8rem 0.9rem;
-      border: 1px solid rgba(244, 239, 230, 0.16);
-      background: rgba(10, 10, 10, 0.38);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
+    .gallery-ghost-text { font-size: 60vw; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .gallery-item,
-    .gallery-item__caption {
-      transition: none;
-    }
+    .gallery-item, .gallery-card-inner, .gallery-item__caption { transition: none; }
   }
 </style>

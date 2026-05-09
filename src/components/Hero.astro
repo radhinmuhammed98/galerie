@@ -6,49 +6,52 @@ import HeroScrollIndicator from './HeroScrollIndicator.astro';
 const { lang } = Astro.props;
 const t = lang === 'en' ? en : fr;
 
-// H1 hero : split en 2 lignes pour éviter la coupure mid-mot d'« audacieux »
 const heroH1Lines = lang === 'en'
   ? ["A space for bold art", "and new ideas"]
   : ["Un espace pour l'art audacieux", "et les nouvelles idées"];
 ---
 
 <section class="hero-scroll-section relative bg-noir-orfevre" id="hero">
-  <!-- Conteneur sticky : le canvas reste fixé pendant que la section défile -->
+  <!-- Conteneur sticky -->
   <div class="hero-scroll-pin sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
 
-    <!-- Particules dorées 3D -->
+    <!-- Perspective grid floor -->
+    <div class="perspective-grid-floor" id="hero-grid-floor" aria-hidden="true"></div>
+
+    <!-- Particules dorées -->
     <div id="hero-particles" class="absolute inset-0 z-[2] pointer-events-none opacity-40 mix-blend-screen"></div>
 
-    <!-- Canvas image-sequence — ratio 16:9 calé sur la nouvelle source vidéo (1296×704).
-         Démarre INVISIBLE (opacity 0) pour ne pas chevaucher le titre ;
-         se révèle progressivement au scroll. -->
+    <!-- Canvas image-sequence (inchangé) -->
     <canvas
       id="hero-sequence-canvas"
-      class="hero-sequence-canvas absolute inset-0 h-full w-full md:inset-auto md:aspect-[16/9] md:w-[min(96vw,170vh)] md:max-h-[95vh] z-0 md:rounded-lg shadow-2xl border border-ivoire/10"
+      class="hero-sequence-canvas absolute inset-0 h-full w-full md:inset-auto md:aspect-[16/9] md:w-[min(96vw,170vh)] md:max-h-[95vh] z-0 md:rounded-[20px] shadow-2xl border border-ivoire/10"
       style="opacity: 0;"
     ></canvas>
 
-    <!-- Loader % visible pendant le préchargement -->
+    <!-- Loader % -->
     <div id="hero-sequence-loader" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-[4] text-ivoire/50 text-xs font-sans tracking-[0.3em] uppercase">
       <span id="hero-sequence-progress">0</span>%
     </div>
 
-    <!-- OVERLAY 1 : Titre éditorial principal -->
-    <!-- Pas de max-w-* sur le wrapper : avec absolute + inset-0, max-width casse le centrage
-         (gauche/droite à 0 → pinned à gauche). Le H1 a déjà sa propre max-w-4xl. -->
-    <div class="hero-overlay-1 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none">
-      <h1 class="hero-h1 text-ivoire text-3xl md:text-5xl lg:text-[4rem] leading-[1.05] font-serif italic tracking-tight select-none px-4 max-w-4xl">
-        {heroH1Lines.map((line) => <span class="block">{line}</span>)}
+    <!-- OVERLAY 1 : H1 massif avec perspective wrapper -->
+    <div class="hero-overlay-1 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none" style="perspective: var(--perspective-hero);">
+      <h1 class="hero-h1 text-ivoire leading-[0.92] font-serif italic tracking-tight select-none px-4 max-w-5xl" style="font-size: clamp(4rem, 9.5vw, 12rem);">
+        {heroH1Lines.map((line, i) => (
+          <span class="hero-h1-line block overflow-hidden" data-line={i}>
+            <span class="hero-h1-inner block" style="transform: perspective(1000px) rotateX(-35deg) translateZ(-200px); opacity: 0;">
+              {line}
+            </span>
+          </span>
+        ))}
       </h1>
-
     </div>
 
-    <!-- Indicateur scroll dédié : ligne verticale + point lumineux qui descend -->
+    <!-- Indicateur scroll -->
     <HeroScrollIndicator />
 
     <!-- OVERLAY 2 : Citation héritage -->
     <div class="hero-overlay-2 absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-[3] pointer-events-none opacity-0">
-      <h2 class="text-ivoire text-4xl md:text-7xl font-serif leading-[1.05] tracking-tight max-w-4xl px-4 select-none">
+      <h2 class="text-ivoire font-serif leading-[1.02] tracking-tight max-w-4xl px-4 select-none" style="font-size: clamp(2.8rem, 6vw, 8rem);">
         {t['heritage.text']}
       </h2>
     </div>
@@ -62,7 +65,6 @@ const heroH1Lines = lang === 'en'
   import { initParticles } from "./ParticlesBackground";
   import { splitText } from "../lib/text-reveal";
 
-  // Hero : 100 frames extraites avec ffmpeg (fps=10, qualité 55, scale=720)
   const HERO_FRAME_COUNT = 100;
   const heroFramePath = (i: number) =>
     `/images/sequence/hero/frame_${String(i + 1).padStart(3, "0")}.webp`;
@@ -76,40 +78,67 @@ const heroH1Lines = lang === 'en'
       const loader = document.getElementById("hero-sequence-loader");
       const progress = document.getElementById("hero-sequence-progress");
       const particlesContainer = document.getElementById("hero-particles");
+      const gridFloor = document.getElementById("hero-grid-floor");
+      const h1Inners = document.querySelectorAll<HTMLElement>(".hero-h1-inner");
 
       if (!canvas || !section || !overlay1 || !overlay2) return;
 
-      // 550vh = scroll très contemplatif (5.5 écrans pour traverser la séquence)
       const isMobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
       section.style.height = isMobile ? "420vh" : "550vh";
 
-      if (particlesContainer) initParticles(particlesContainer, { count: 80 });
+      if (particlesContainer) initParticles(particlesContainer, { count: isMobile ? 40 : 80 });
 
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // --- 3D word entry animation sur le H1 ---
+      if (!prefersReducedMotion && h1Inners.length) {
+        gsap.to(Array.from(h1Inners), {
+          rotateX: 0,
+          translateZ: 0,
+          opacity: 1,
+          duration: 1.2,
+          ease: "power4.out",
+          stagger: 0.18,
+          delay: 0.3,
+          clearProps: "transform,opacity",
+        });
+      } else {
+        h1Inners.forEach((el) => {
+          el.style.opacity = "1";
+          el.style.transform = "none";
+        });
+      }
+
+      // --- Perspective grid floor reveal ---
+      if (gridFloor && !prefersReducedMotion && !isMobile) {
+        gsap.to(gridFloor, {
+          opacity: 0.6,
+          duration: 1.8,
+          ease: "power2.out",
+          delay: 0.6,
+        });
+      }
+
       if (prefersReducedMotion) {
         gsap.set(overlay1, { opacity: 1 });
         gsap.set(overlay2, { opacity: 0 });
       }
 
-      // Champ magnétique sur les lettres du H1 — chaque ligne est splittée séparément pour
-      // préserver la structure 2-lignes du markup (pas de coupure mid-mot d'« audacieux »).
+      // --- Magnetic field sur les lettres du H1 ---
       const h1 = document.querySelector<HTMLElement>(".hero-h1");
       if (h1 && !prefersReducedMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
         const lineSpans = h1.querySelectorAll<HTMLElement>(".block");
         const letters = Array.from(lineSpans).flatMap((line) => splitText(line, "letters"));
-        const radius = 120; // rayon d'influence en px
-        const maxAmp = 4;   // amplitude max en px
+        const radius = 120;
+        const maxAmp = 4;
 
-        // Cache l'origine de chaque lettre une seule fois (positions DOM, recalculées au resize)
         type LetterOrigin = { el: HTMLElement; cx: number; cy: number; tx: any; ty: any };
         let origins: LetterOrigin[] = [];
         const computeOrigins = () => {
           origins = letters.map((el) => {
             const r = el.getBoundingClientRect();
             return {
-              el,
-              cx: r.left + r.width / 2,
-              cy: r.top + r.height / 2,
+              el, cx: r.left + r.width / 2, cy: r.top + r.height / 2,
               tx: gsap.quickTo(el, "x", { duration: 0.5, ease: "power2.out" }),
               ty: gsap.quickTo(el, "y", { duration: 0.5, ease: "power2.out" }),
             };
@@ -120,36 +149,27 @@ const heroH1Lines = lang === 'en'
 
         let mx = -1e6, my = -1e6;
         window.addEventListener("mousemove", (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
-
         gsap.ticker.add(() => {
           for (const o of origins) {
-            const dx = mx - o.cx;
-            const dy = my - o.cy;
+            const dx = mx - o.cx; const dy = my - o.cy;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < radius) {
               const k = (1 - dist / radius) * maxAmp;
-              o.tx((dx / dist) * k);
-              o.ty((dy / dist) * k);
-            } else {
-              o.tx(0);
-              o.ty(0);
-            }
+              o.tx((dx / dist) * k); o.ty((dy / dist) * k);
+            } else { o.tx(0); o.ty(0); }
           }
         });
       }
 
-      // Pilote la séquence + les overlays via la progression du scroll
+      // --- Scroll sequence (canvas) inchangé ---
       initScrollSequence({
-        canvas,
-        section,
+        canvas, section,
         framePath: heroFramePath,
         frameCount: HERO_FRAME_COUNT,
         loaderEl: loader,
         progressEl: progress,
         onProgress: (p) => {
-          // Canvas : invisible jusqu'à 0.10 → fade-in vers full à 0.30 → hold → fondu noir 0.88 → 1.0.
-          // Fondu cinématographique vers le noir en fin de section pour enchaîner
-          // proprement avec le fade-in du ScrollVideo (crossfade via noir pur).
+          // Canvas opacity
           let cOpacity = 0;
           if (p < 0.10) cOpacity = 0;
           else if (p < 0.30) cOpacity = (p - 0.10) / 0.20;
@@ -157,21 +177,37 @@ const heroH1Lines = lang === 'en'
           else cOpacity = 1 - (p - 0.88) / 0.12;
           canvas.style.opacity = String(Math.max(0, Math.min(1, cOpacity)));
 
-          // Phase 1 : titre fade out — démarre seulement quand le canvas commence à apparaître
-          // (entre 0.10 et 0.40), pour qu'il y ait un léger crossfade titre → vidéo.
+          // Grid floor fades out as canvas appears
+          if (gridFloor && !isMobile) {
+            gridFloor.style.opacity = String(Math.max(0, 0.6 * (1 - p / 0.25)));
+          }
+
+          // Overlay 1 : titre (3D recession + fade out)
           let o1 = 1;
           if (p < 0.10) o1 = 1;
           else if (p < 0.40) o1 = 1 - (p - 0.10) / 0.30;
           else o1 = 0;
-          gsap.set(overlay1, { opacity: o1, y: -50 * (1 - o1), scale: 1 - 0.05 * (1 - o1) });
+          // 3D depth recession as it fades out
+          const recZ = -80 * (1 - o1);
+          gsap.set(overlay1, {
+            opacity: o1,
+            y: -50 * (1 - o1),
+            rotateX: -8 * (1 - o1),
+            z: recZ,
+          });
 
-          // Phase 2 : citation héritage (fade in 0.45 → 0.65, hold 0.65 → 0.92, fade out 0.92 → 1)
+          // Overlay 2 : citation héritage (3D entry from depth)
           let o2 = 0;
           if (p >= 0.45 && p < 0.65) o2 = (p - 0.45) / 0.20;
           else if (p >= 0.65 && p < 0.92) o2 = 1;
           else if (p >= 0.92) o2 = 1 - (p - 0.92) / 0.08;
           o2 = gsap.utils.clamp(0, 1, o2);
-          gsap.set(overlay2, { opacity: o2, y: (1 - o2) * 80 - (p > 0.92 ? 50 * (p - 0.92) / 0.08 : 0), scale: 0.95 + 0.05 * o2 });
+          gsap.set(overlay2, {
+            opacity: o2,
+            y: (1 - o2) * 80 - (p > 0.92 ? 50 * (p - 0.92) / 0.08 : 0),
+            rotateX: -12 * (1 - o2),
+            scale: 0.95 + 0.05 * o2,
+          });
         },
       });
     };
@@ -188,7 +224,17 @@ const heroH1Lines = lang === 'en'
   .hero-scroll-section h1,
   .hero-scroll-section h2 {
     font-weight: 300;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .hero-h1-inner {
+    will-change: transform, opacity;
+    transform-origin: center bottom;
+  }
+
+  .hero-overlay-1,
+  .hero-overlay-2 {
+    transform-style: preserve-3d;
   }
 
   @media (max-width: 767px) {
@@ -200,40 +246,42 @@ const heroH1Lines = lang === 'en'
     .hero-scroll-pin::after {
       content: "";
       position: absolute;
-      inset: 78px 16px 24px;
+      inset: 70px 14px 22px;
       z-index: 1;
       pointer-events: none;
-      border: 1px solid rgba(244, 239, 230, 0.12);
-      background: linear-gradient(180deg, rgba(10, 10, 10, 0.08), rgba(10, 10, 10, 0.34));
-      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.36);
+      border: 1px solid rgba(244, 239, 230, 0.10);
+      background: linear-gradient(180deg, rgba(10, 10, 10, 0.06), rgba(10, 10, 10, 0.30));
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.30);
       backdrop-filter: blur(1px);
       -webkit-backdrop-filter: blur(1px);
+      border-radius: 20px;
     }
 
     .hero-overlay-1,
     .hero-overlay-2 {
-      padding-inline: 1.25rem;
+      padding-inline: 1rem;
     }
 
     .hero-h1 {
-      font-size: clamp(2.8rem, 14vw, 4.8rem);
-      line-height: 0.96;
+      font-size: clamp(3rem, 14vw, 5.5rem) !important;
+      line-height: 0.95;
       text-wrap: balance;
     }
 
     .hero-overlay-2 h2 {
-      font-size: clamp(2.4rem, 12vw, 4rem);
+      font-size: clamp(2.4rem, 12vw, 4rem) !important;
       line-height: 1;
       text-wrap: balance;
     }
 
     #hero-sequence-loader {
       bottom: max(1.25rem, env(safe-area-inset-bottom));
-      padding: 0.75rem 0.9rem;
-      border: 1px solid rgba(212, 184, 134, 0.18);
+      padding: 0.65rem 0.8rem;
+      border: 1px solid rgba(212, 184, 134, 0.16);
       background: rgba(10, 10, 10, 0.42);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      border-radius: 12px;
     }
   }
 </style>

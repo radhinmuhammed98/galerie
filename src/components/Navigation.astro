@@ -8,7 +8,8 @@ const basePath = lang === 'en' ? '/en/' : '/fr/';
 const alternatePath = lang === 'en' ? '/fr/' : '/en/';
 ---
 
-<nav id="main-nav" class="fixed top-0 left-0 w-full z-50 px-4 md:px-6 py-4 md:py-6 font-sans text-sm uppercase tracking-widest text-ivoire transition-all duration-500">
+<!-- Desktop top nav -->
+<nav id="main-nav" class="fixed top-0 left-0 w-full z-50 px-4 md:px-6 py-4 md:py-5 font-sans text-xs uppercase tracking-widest text-ivoire transition-all duration-500">
   <div class="nav-shell mx-auto flex w-full max-w-[1800px] items-center justify-between">
     <a
       href={basePath}
@@ -21,15 +22,17 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
       data-magnetic-inner-amp="4"
       aria-label="Accueil"
     >
-      <img src="/wordmark-logo-white.svg" alt="Galerie des Orfevres" class="h-7 md:h-8 w-auto block" id="nav-logo" />
+      <img src="/wordmark-logo-white.svg" alt="Galerie des Orfevres" class="h-6 md:h-7 w-auto block" id="nav-logo" />
     </a>
 
-    <div class="hidden md:flex items-center gap-12">
+    <!-- Desktop links -->
+    <div class="hidden md:flex items-center gap-10">
       <a href={`${basePath}#gallery`} data-scroll-link class="link-fancy hover:text-or-fonce transition-colors">{t['nav.gallery']}</a>
       <a href={`${basePath}#history`} data-scroll-link class="link-fancy hover:text-or-fonce transition-colors">{t['nav.history']}</a>
       <a href={`${basePath}#contact`} data-scroll-link class="link-fancy hover:text-or-fonce transition-colors">{t['nav.contact']}</a>
     </div>
 
+    <!-- Desktop right actions -->
     <div class="hidden md:flex items-center gap-4">
       <button
         id="theme-toggle"
@@ -42,12 +45,13 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
         <span class="theme-toggle__sun" aria-hidden="true"></span>
         <span class="theme-toggle__moon" aria-hidden="true"></span>
       </button>
-      <a href="/fr/" data-language-switch data-lang-target="fr" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'fr' ? 'text-or-fonce' : ''}`}>FR</a>
+      <a href="/fr/" data-language-switch data-lang-target="fr" class={`link-fancy hover:text-or-fonce transition-colors text-[10px] ${lang === 'fr' ? 'text-or-fonce' : ''}`}>FR</a>
       <span class="opacity-40">/</span>
-      <a href="/en/" data-language-switch data-lang-target="en" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'en' ? 'text-or-fonce' : ''}`}>EN</a>
+      <a href="/en/" data-language-switch data-lang-target="en" class={`link-fancy hover:text-or-fonce transition-colors text-[10px] ${lang === 'en' ? 'text-or-fonce' : ''}`}>EN</a>
     </div>
 
-    <div class="flex md:hidden items-center gap-3">
+    <!-- Mobile: slim top bar — only logo + theme + lang -->
+    <div class="flex md:hidden items-center gap-2.5">
       <button
         class="theme-toggle"
         type="button"
@@ -67,40 +71,58 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
       >
         {lang === 'en' ? 'FR' : 'EN'}
       </a>
-      <button
-        id="mobile-nav-toggle"
-        class="mobile-nav-toggle"
-        type="button"
-        aria-controls="mobile-nav-menu"
-        aria-expanded="false"
-        aria-label="Menu"
-      >
-        <span></span>
-        <span></span>
-      </button>
     </div>
   </div>
+</nav>
 
-  <div id="mobile-nav-menu" class="mobile-nav-menu md:hidden" inert>
-    <a href={`${basePath}#gallery`} data-scroll-link>{t['nav.gallery']}</a>
-    <a href={`${basePath}#history`} data-scroll-link>{t['nav.history']}</a>
-    <a href={`${basePath}#contact`} data-scroll-link>{t['nav.contact']}</a>
-    <div class="mobile-nav-menu__langs" aria-label="Language">
-      <a href="/fr/" data-language-switch data-lang-target="fr" class={lang === 'fr' ? 'is-active' : ''}>FR</a>
-      <a href="/en/" data-language-switch data-lang-target="en" class={lang === 'en' ? 'is-active' : ''}>EN</a>
-    </div>
-    <button
-      class="theme-toggle theme-toggle--mobile"
-      type="button"
-      aria-label="Switch color theme"
-      aria-pressed="false"
-      data-theme-toggle
-    >
-      <span class="theme-toggle__sun" aria-hidden="true"></span>
-      <span class="theme-toggle__moon" aria-hidden="true"></span>
-      <span class="theme-toggle__label">{lang === 'en' ? 'Theme' : 'Theme'}</span>
-    </button>
-  </div>
+<!-- =====================================================
+     MOBILE BOTTOM NAVIGATION (iOS-style)
+     ===================================================== -->
+<nav class="bottom-nav" id="bottom-nav" aria-label="Navigation principale">
+  <a href={`${basePath}#gallery`} data-scroll-link class="bottom-nav__tab" data-section="gallery" id="btn-tab-gallery">
+    <span class="bottom-nav__icon" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+        <rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+        <rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+        <rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+      </svg>
+      <span class="bottom-nav__dot"></span>
+    </span>
+    <span>{t['nav.gallery']}</span>
+  </a>
+
+  <a href={`${basePath}#history`} data-scroll-link class="bottom-nav__tab" data-section="history" id="btn-tab-history">
+    <span class="bottom-nav__icon" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M10 6v4l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span class="bottom-nav__dot"></span>
+    </span>
+    <span>{t['nav.history']}</span>
+  </a>
+
+  <a href={`${basePath}#services`} data-scroll-link class="bottom-nav__tab" data-section="services" id="btn-tab-services">
+    <span class="bottom-nav__icon" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 5h14M3 10h14M3 15h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span class="bottom-nav__dot"></span>
+    </span>
+    <span>{lang === 'en' ? 'Services' : 'Services'}</span>
+  </a>
+
+  <a href={`${basePath}#contact`} data-scroll-link class="bottom-nav__tab" data-section="contact" id="btn-tab-contact">
+    <span class="bottom-nav__icon" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 4h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M2 5l8 6 8-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span class="bottom-nav__dot"></span>
+    </span>
+    <span>{t['nav.contact']}</span>
+  </a>
 </nav>
 
 <script>
@@ -109,30 +131,9 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
   if (typeof window !== "undefined") {
     const setup = () => {
       const nav = document.getElementById("main-nav");
-      const toggle = document.getElementById("mobile-nav-toggle") as HTMLButtonElement | null;
-      const menu = document.getElementById("mobile-nav-menu") as HTMLElement | null;
+      const bottomNav = document.getElementById("bottom-nav");
 
-      const closeMenu = () => {
-        nav?.classList.remove("is-menu-open");
-        toggle?.setAttribute("aria-expanded", "false");
-        menu?.setAttribute("inert", "");
-      };
-
-      if (toggle && menu && !toggle.dataset.bound) {
-        toggle.dataset.bound = "true";
-        toggle.addEventListener("click", () => {
-          const isOpen = toggle.getAttribute("aria-expanded") === "true";
-          toggle.setAttribute("aria-expanded", String(!isOpen));
-          nav?.classList.toggle("is-menu-open", !isOpen);
-          if (isOpen) menu.setAttribute("inert", "");
-          else menu.removeAttribute("inert");
-        });
-
-        menu.querySelectorAll("a").forEach((link) => {
-          link.addEventListener("click", closeMenu);
-        });
-      }
-
+      // ---- Langue switcher ----
       document.querySelectorAll<HTMLAnchorElement>("[data-language-switch]").forEach((link) => {
         if (link.dataset.langBound) return;
         link.dataset.langBound = "true";
@@ -143,6 +144,7 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
         });
       });
 
+      // ---- Theme toggle ----
       const syncThemeButtons = () => {
         const isLight = document.documentElement.dataset.theme === "light";
         document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
@@ -150,7 +152,6 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
           button.dataset.themeState = isLight ? "light" : "dark";
         });
       };
-
       syncThemeButtons();
       document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
         if (button.dataset.themeBound) return;
@@ -163,35 +164,55 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
         });
       });
 
+      // ---- Scroll: is-scrolled ----
       if (nav && !nav.dataset.scrollBound) {
         nav.dataset.scrollBound = "true";
-        const updateNav = () => {
-          nav.classList.toggle("is-scrolled", window.scrollY > 24);
-        };
+        const updateNav = () => { nav.classList.toggle("is-scrolled", window.scrollY > 24); };
         updateNav();
         window.addEventListener("scroll", updateNav, { passive: true });
       }
 
-      // Animation logo : fade-in + leger scale au premier chargement uniquement.
+      // ---- Bottom nav active state via IntersectionObserver ----
+      if (bottomNav) {
+        const sections = ["gallery", "history", "services", "contact"];
+        const tabs = sections.map((id) => document.getElementById(`btn-tab-${id}`));
+        const sectionEls = sections.map((id) => document.getElementById(id));
+
+        const setActive = (id: string) => {
+          tabs.forEach((tab) => tab?.classList.remove("is-active"));
+          const idx = sections.indexOf(id);
+          if (idx >= 0) tabs[idx]?.classList.add("is-active");
+        };
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                setActive(entry.target.id);
+                break;
+              }
+            }
+          },
+          { rootMargin: "-40% 0px -40% 0px", threshold: 0 }
+        );
+
+        sectionEls.forEach((el) => { if (el) observer.observe(el); });
+      }
+
+      // ---- Logo animation (first load only) ----
       const logo = document.getElementById("nav-logo");
       if (!logo) return;
-
       const alreadySeen = sessionStorage.getItem("orfevres-logo-shown") === "1";
       if (alreadySeen || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         gsap.set(logo, { opacity: 1, y: 0 });
         return;
       }
-
       gsap.fromTo(
         logo,
         { opacity: 0, y: -8, scale: 0.96 },
         {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 1.2,
-          ease: "power3.out",
-          delay: 0.2,
+          opacity: 1, y: 0, scale: 1,
+          duration: 1.2, ease: "power3.out", delay: 0.2,
           onComplete: () => sessionStorage.setItem("orfevres-logo-shown", "1"),
         }
       );
@@ -217,12 +238,12 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
-    width: 48px;
-    height: 28px;
+    width: 44px;
+    height: 26px;
     padding: 3px;
-    border: 1px solid rgba(212, 184, 134, 0.32);
+    border: 1px solid rgba(212, 184, 134, 0.3);
     border-radius: 999px;
-    background: rgba(244, 239, 230, 0.08);
+    background: rgba(244, 239, 230, 0.06);
     color: currentColor;
     cursor: pointer;
     transition: background 0.3s ease, border-color 0.3s ease;
@@ -233,186 +254,78 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
     position: absolute;
     top: 3px;
     left: 3px;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 999px;
     background: #D4B886;
-    box-shadow: 0 0 18px rgba(212, 184, 134, 0.35);
+    box-shadow: 0 0 16px rgba(212, 184, 134, 0.35);
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .theme-toggle[data-theme-state="light"]::before {
-    transform: translateX(20px);
+    transform: translateX(18px);
   }
 
   .theme-toggle__sun,
   .theme-toggle__moon {
     position: relative;
     z-index: 1;
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 999px;
   }
-
-  .theme-toggle__sun {
-    background: currentColor;
-    opacity: 0.75;
-  }
-
-  .theme-toggle__moon {
-    border: 1px solid currentColor;
-    opacity: 0.75;
-  }
-
-  .theme-toggle__label {
-    margin-left: 0.7rem;
-    font-size: 0.68rem;
-    letter-spacing: 0.2em;
-  }
+  .theme-toggle__sun { background: currentColor; opacity: 0.75; }
+  .theme-toggle__moon { border: 1px solid currentColor; opacity: 0.75; }
 
   #main-nav.is-scrolled .nav-shell {
-    padding-block: 0.8rem;
+    padding-block: 0.7rem;
     padding-inline: 1rem;
-    border: 1px solid rgba(244, 239, 230, 0.11);
-    background: rgba(10, 10, 10, 0.58);
+    border: 1px solid rgba(244, 239, 230, 0.10);
+    background: rgba(10, 10, 10, 0.62);
     box-shadow: 0 18px 70px rgba(0, 0, 0, 0.28);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
   }
 
   :global(html[data-theme="light"]) #main-nav.is-scrolled,
   :global(html[data-theme="light"]) #main-nav.is-menu-open,
   :global(html[data-theme="light"]) #main-nav.is-scrolled .nav-shell,
-  :global(html[data-theme="light"]) .mobile-nav-menu,
-  :global(html[data-theme="light"]) .mobile-lang-switch,
-  :global(html[data-theme="light"]) .mobile-nav-toggle {
+  :global(html[data-theme="light"]) .mobile-lang-switch {
     color: #17120F;
   }
 
   @media (max-width: 767px) {
     #main-nav {
-      padding-top: max(0.85rem, env(safe-area-inset-top));
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+      padding-inline: 1rem;
     }
 
-    .nav-shell,
-    .mobile-nav-menu {
-      border: 1px solid rgba(244, 239, 230, 0.12);
-      background: rgba(10, 10, 10, 0.58);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
+    .nav-shell {
+      padding: 0.6rem 0.75rem;
+      min-height: 52px;
+      border: 1px solid rgba(244, 239, 230, 0.10);
+      background: rgba(10, 10, 10, 0.52);
       backdrop-filter: blur(20px) saturate(140%);
       -webkit-backdrop-filter: blur(20px) saturate(140%);
       border-radius: var(--radius-ui);
     }
 
-    .nav-shell {
-      min-height: 58px;
-      padding: 0.75rem 0.9rem;
-    }
-
-    .mobile-lang-switch,
-    .mobile-nav-toggle {
+    .mobile-lang-switch {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(212, 184, 134, 0.28);
-      background: rgba(244, 239, 230, 0.06);
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(212, 184, 134, 0.25);
+      background: rgba(244, 239, 230, 0.05);
       color: #F4EFE6;
       border-radius: 999px;
-    }
-
-    .mobile-lang-switch {
-      font-size: 0.68rem;
-      letter-spacing: 0.18em;
-    }
-
-    .mobile-nav-toggle {
-      position: relative;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .mobile-nav-toggle span {
-      width: 18px;
-      height: 1px;
-      background: currentColor;
-      transition: transform 0.35s ease;
-    }
-
-    #main-nav.is-menu-open .mobile-nav-toggle span:first-child {
-      transform: translateY(3.5px) rotate(45deg);
-    }
-
-    #main-nav.is-menu-open .mobile-nav-toggle span:last-child {
-      transform: translateY(-3.5px) rotate(-45deg);
-    }
-
-    .mobile-nav-menu {
-      position: absolute;
-      top: calc(100% + 0.55rem);
-      left: 1rem;
-      right: 1rem;
-      display: grid;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(-8px);
-      pointer-events: none;
-      transition: opacity 0.28s ease, transform 0.28s ease;
-    }
-
-    #main-nav.is-menu-open .mobile-nav-menu {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .mobile-nav-menu a {
-      padding: 1rem 1.1rem;
-      border-bottom: 1px solid rgba(244, 239, 230, 0.09);
-      color: rgba(244, 239, 230, 0.88);
-      letter-spacing: 0.18em;
-    }
-
-    .mobile-nav-menu__langs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: rgba(244, 239, 230, 0.04);
-    }
-
-    .mobile-nav-menu__langs a {
-      text-align: center;
-      border-bottom: 0;
-    }
-
-    .mobile-nav-menu__langs .is-active {
-      color: #D4B886;
-    }
-
-    .theme-toggle--mobile {
-      width: auto;
-      height: 48px;
-      justify-content: flex-start;
-      gap: 0.5rem;
-      margin: 0.85rem;
-      padding-inline: 0.8rem 1rem;
-    }
-
-    .theme-toggle--mobile::before {
-      left: 0.8rem;
-      top: 13px;
-    }
-
-    .theme-toggle--mobile[data-theme-state="light"]::before {
-      transform: translateX(20px);
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .nav-shell,
-    .mobile-nav-menu,
-    .mobile-nav-toggle span {
-      transition: none;
-    }
+    .nav-shell { transition: none; }
   }
 </style>
