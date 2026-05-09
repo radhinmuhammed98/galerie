@@ -28,7 +28,7 @@ const items: GalleryItem[] = [
     <div class="gallery-grid grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
       {items.map((item, index) => (
         <div
-          class={`gallery-item relative overflow-hidden group ${index === 0 ? 'is-active' : ''} ${index % 2 !== 0 ? 'md:mt-32' : ''}`}
+          class={`gallery-item image-glide-left relative overflow-hidden group ${index === 0 ? 'is-active' : ''} ${index % 2 !== 0 ? 'md:mt-32' : ''}`}
           data-cursor="image"
           data-cursor-label="voir"
           data-caption={item.caption}
@@ -83,11 +83,11 @@ const items: GalleryItem[] = [
           return cover;
         });
 
-        gsap.set(items, { y: 48, opacity: 0 });
+        gsap.set(items, { x: -96, opacity: 0, clipPath: "inset(0% 18% 0% 0%)" });
         gsap.set(images, { scale: 1.08, transformOrigin: "center" });
 
         if (reduced) {
-          gsap.set(items, { y: 0, opacity: 1 });
+          gsap.set(items, { x: 0, opacity: 1, clipPath: "inset(0% 0% 0% 0%)" });
           gsap.set(images, { scale: 1 });
           covers.forEach((cover) => cover.remove());
         } else {
@@ -100,11 +100,12 @@ const items: GalleryItem[] = [
           });
 
           tl.to(items, {
-            y: 0,
+            x: 0,
             opacity: 1,
-            duration: 0.9,
+            clipPath: "inset(0% 0% 0% 0%)",
+            duration: 1.05,
             stagger: 0.16,
-            ease: "power3.out",
+            ease: "power4.out",
           })
           .to(covers, {
             clipPath: "polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)",

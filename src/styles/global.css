@@ -23,12 +23,26 @@
     --brun-vernis: #1A1210;
     --ivoire-chaud: #EFE5D5;
     --ombre-tableau: #130F0C;
+    --radius-ui: 18px;
+    --radius-ui-lg: 24px;
+    color-scheme: dark;
+  }
+
+  html[data-theme="light"] {
+    --noir-orfevre: #F4EFE6;
+    --ivoire: #17120F;
+    --gris-pierre: #D8CCB8;
+    --ombre-tableau: #E9DDC9;
+    color-scheme: light;
   }
 
   html, body {
     @apply bg-noir-orfevre text-ivoire font-sans;
     margin: 0;
     padding: 0;
+    background: var(--noir-orfevre);
+    color: var(--ivoire);
+    transition: background-color 0.35s ease, color 0.35s ease;
   }
 
   html {
@@ -81,6 +95,69 @@
     outline: 1px solid rgba(212, 184, 134, 0.88);
     outline-offset: 4px;
   }
+
+  html[data-theme="light"] body {
+    background:
+      radial-gradient(circle at 50% -10%, rgba(184, 147, 90, 0.18), transparent 34rem),
+      #F4EFE6;
+    color: #17120F;
+  }
+
+  html[data-theme="light"] .bg-noir-orfevre,
+  html[data-theme="light"] .surface-art,
+  html[data-theme="light"] .footer-section {
+    background:
+      radial-gradient(circle at 18% 0%, rgba(184, 147, 90, 0.18), transparent 30rem),
+      radial-gradient(circle at 92% 30%, rgba(143, 95, 61, 0.12), transparent 26rem),
+      linear-gradient(180deg, #F4EFE6 0%, #EFE5D5 100%) !important;
+    color: #17120F !important;
+  }
+
+  html[data-theme="light"] .surface-art .text-ivoire,
+  html[data-theme="light"] .footer-section .text-ivoire,
+  html[data-theme="light"] .monogram-section .text-ivoire {
+    color: #17120F !important;
+  }
+
+  html[data-theme="light"] .hero-scroll-section .text-ivoire,
+  html[data-theme="light"] .scroll-video-section .text-ivoire,
+  html[data-theme="light"] .diptyque-section .text-ivoire {
+    color: #F4EFE6 !important;
+  }
+
+  html[data-theme="light"] .text-gray-300,
+  html[data-theme="light"] .text-gray-400,
+  html[data-theme="light"] .text-gray-500 {
+    color: rgba(23, 18, 15, 0.68) !important;
+  }
+
+  html[data-theme="light"] .bg-ivoire,
+  html[data-theme="light"] .gallery-section,
+  html[data-theme="light"] .history-section,
+  html[data-theme="light"] .monogram-section {
+    background:
+      radial-gradient(circle at 14% 6%, rgba(184, 147, 90, 0.18), transparent 34rem),
+      linear-gradient(180deg, #F4EFE6 0%, #E9DDC9 100%) !important;
+    color: #17120F !important;
+  }
+
+  html[data-theme="light"] .nav-shell,
+  html[data-theme="light"] .mobile-nav-menu,
+  html[data-theme="light"] .cta-right,
+  html[data-theme="light"] .events-card,
+  html[data-theme="light"] .service-card {
+    border-color: rgba(23, 18, 15, 0.14) !important;
+    background-color: rgba(244, 239, 230, 0.68) !important;
+    color: #17120F !important;
+  }
+
+  html[data-theme="light"] #main-nav.is-scrolled,
+  html[data-theme="light"] #main-nav.is-menu-open,
+  html[data-theme="light"] .mobile-nav-menu,
+  html[data-theme="light"] .mobile-lang-switch,
+  html[data-theme="light"] .mobile-nav-toggle {
+    color: #17120F !important;
+  }
 }
 
 @layer components {
@@ -128,6 +205,34 @@
       linear-gradient(180deg, #130F0C 0%, #0A0A0A 58%, #120D0B 100%);
   }
 
+  .rounded-surface,
+  .nav-shell,
+  .mobile-nav-menu,
+  .service-card,
+  .events-card,
+  .gallery-item,
+  .history-img-container .aspect-\[3\/4\],
+  .monogram-artwork-card,
+  .cta-right,
+  .cta-btn,
+  .loader__content::before,
+  canvas,
+  img {
+    border-radius: var(--radius-ui);
+  }
+
+  .service-card,
+  .events-card,
+  .gallery-item,
+  .history-img-container .aspect-\[3\/4\],
+  .monogram-artwork-card {
+    overflow: hidden;
+  }
+
+  .image-glide-left {
+    will-change: transform, opacity, clip-path;
+  }
+
   .button-sheen {
     position: relative;
     isolation: isolate;
@@ -149,5 +254,23 @@
   .button-sheen:hover::after,
   .button-sheen:focus-visible::after {
     left: 120%;
+  }
+
+  @media (max-width: 767px) {
+    :root {
+      --radius-ui: 16px;
+      --radius-ui-lg: 20px;
+    }
+
+    h1, h2, h3, p, a, span, button {
+      overflow-wrap: anywhere;
+    }
+
+    .service-card,
+    .events-card,
+    .gallery-item,
+    .cta-right {
+      border-radius: var(--radius-ui) !important;
+    }
   }
 }

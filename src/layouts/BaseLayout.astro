@@ -28,6 +28,14 @@ const { title, description = "Galerie des Orfevres, galerie d'art parisienne.", 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem("orfevres-theme");
+        const preferred = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = stored || preferred;
+      })();
+    </script>
+
     <!-- View Transitions Astro : fade entre les pages, transitions:persist sur les elements globaux. -->
     <ClientRouter fallback="animate" />
   </head>

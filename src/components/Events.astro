@@ -38,7 +38,7 @@ const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
   <!-- Conteneur de scroll horizontal piloté par le scroll vertical (GSAP) -->
   <div class="events-scroll-container flex gap-8 px-6 md:px-12 w-[max-content]" data-cursor="drag" data-cursor-label="Glisser">
     {events.map((evt) => (
-      <a href="#contact-cta" data-scroll-link class="events-card w-[80vw] md:w-[40vw] flex-shrink-0 group cursor-pointer block">
+      <a href="#contact-cta" data-scroll-link class="events-card image-glide-left w-[80vw] md:w-[40vw] flex-shrink-0 group cursor-pointer block">
         <div class="aspect-[16/9] w-full overflow-hidden bg-gris-pierre relative mb-6">
           <img src={evt.image} alt={evt.title} class="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105" loading="lazy" />
           <div class="absolute inset-0 bg-noir-orfevre/20 group-hover:bg-transparent transition-colors duration-500"></div>
@@ -140,6 +140,19 @@ const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
         };
       });
 
+      gsap.fromTo(cards,
+        { x: -80, opacity: 0, clipPath: "inset(0% 14% 0% 0%)" },
+        {
+          x: 0,
+          opacity: 1,
+          clipPath: "inset(0% 0% 0% 0%)",
+          duration: 1,
+          stagger: 0.12,
+          ease: "power4.out",
+          scrollTrigger: { trigger, start: "top 78%", once: true },
+        }
+      );
+
       void ScrollTrigger;
     };
 
@@ -167,6 +180,16 @@ const events = eventsData[lang as 'fr' | 'en'] ?? eventsData.fr;
     opacity: 0;
     transform: translateY(8px);
     transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+
+  .events-card h3 {
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .events-card .border-b {
+    gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .events-card:hover .events-card__cta,

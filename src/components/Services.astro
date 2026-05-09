@@ -34,7 +34,7 @@ const services = [
         <a
           href="#contact-cta"
           data-scroll-link
-          class="service-card relative group aspect-[3/4] overflow-hidden cursor-pointer"
+          class="service-card image-glide-left relative group aspect-[3/4] overflow-hidden cursor-pointer"
           data-cursor="link"
           data-magnetic
           data-magnetic-radius="120"
@@ -99,9 +99,9 @@ const services = [
 
       // Cards reveal : leger decalage vertical + profondeur pour garder le rythme editorial.
       gsap.fromTo(".service-card",
-        { y: 90, opacity: 0, rotateX: 5 },
+        { x: -90, opacity: 0, rotateY: -4, clipPath: "inset(0% 14% 0% 0%)" },
         {
-          y: 0, opacity: 1, rotateX: 0, duration: 1.05, stagger: 0.18, ease: "power3.out",
+          x: 0, opacity: 1, rotateY: 0, clipPath: "inset(0% 0% 0% 0%)", duration: 1.05, stagger: 0.18, ease: "power4.out",
           scrollTrigger: { trigger: "#services", start: "top 70%" }
         }
       );

@@ -31,12 +31,33 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
     </div>
 
     <div class="hidden md:flex items-center gap-4">
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-label="Switch color theme"
+        aria-pressed="false"
+        data-theme-toggle
+      >
+        <span class="theme-toggle__sun" aria-hidden="true"></span>
+        <span class="theme-toggle__moon" aria-hidden="true"></span>
+      </button>
       <a href="/fr/" data-language-switch data-lang-target="fr" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'fr' ? 'text-or-fonce' : ''}`}>FR</a>
       <span class="opacity-40">/</span>
       <a href="/en/" data-language-switch data-lang-target="en" class={`link-fancy hover:text-or-fonce transition-colors ${lang === 'en' ? 'text-or-fonce' : ''}`}>EN</a>
     </div>
 
     <div class="flex md:hidden items-center gap-3">
+      <button
+        class="theme-toggle"
+        type="button"
+        aria-label="Switch color theme"
+        aria-pressed="false"
+        data-theme-toggle
+      >
+        <span class="theme-toggle__sun" aria-hidden="true"></span>
+        <span class="theme-toggle__moon" aria-hidden="true"></span>
+      </button>
       <a
         href={alternatePath}
         data-language-switch
@@ -68,6 +89,17 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
       <a href="/fr/" data-language-switch data-lang-target="fr" class={lang === 'fr' ? 'is-active' : ''}>FR</a>
       <a href="/en/" data-language-switch data-lang-target="en" class={lang === 'en' ? 'is-active' : ''}>EN</a>
     </div>
+    <button
+      class="theme-toggle theme-toggle--mobile"
+      type="button"
+      aria-label="Switch color theme"
+      aria-pressed="false"
+      data-theme-toggle
+    >
+      <span class="theme-toggle__sun" aria-hidden="true"></span>
+      <span class="theme-toggle__moon" aria-hidden="true"></span>
+      <span class="theme-toggle__label">{lang === 'en' ? 'Theme' : 'Theme'}</span>
+    </button>
   </div>
 </nav>
 
@@ -108,6 +140,26 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
           if (!window.location.hash) return;
           const target = link.dataset.langTarget === "en" ? "/en/" : "/fr/";
           link.href = `${target}${window.location.hash}`;
+        });
+      });
+
+      const syncThemeButtons = () => {
+        const isLight = document.documentElement.dataset.theme === "light";
+        document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(isLight));
+          button.dataset.themeState = isLight ? "light" : "dark";
+        });
+      };
+
+      syncThemeButtons();
+      document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
+        if (button.dataset.themeBound) return;
+        button.dataset.themeBound = "true";
+        button.addEventListener("click", () => {
+          const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+          document.documentElement.dataset.theme = nextTheme;
+          localStorage.setItem("orfevres-theme", nextTheme);
+          syncThemeButtons();
         });
       });
 
@@ -156,7 +208,66 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
 
 <style>
   .nav-shell {
+    border-radius: var(--radius-ui);
     transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease;
+  }
+
+  .theme-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 48px;
+    height: 28px;
+    padding: 3px;
+    border: 1px solid rgba(212, 184, 134, 0.32);
+    border-radius: 999px;
+    background: rgba(244, 239, 230, 0.08);
+    color: currentColor;
+    cursor: pointer;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .theme-toggle::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #D4B886;
+    box-shadow: 0 0 18px rgba(212, 184, 134, 0.35);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .theme-toggle[data-theme-state="light"]::before {
+    transform: translateX(20px);
+  }
+
+  .theme-toggle__sun,
+  .theme-toggle__moon {
+    position: relative;
+    z-index: 1;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+  }
+
+  .theme-toggle__sun {
+    background: currentColor;
+    opacity: 0.75;
+  }
+
+  .theme-toggle__moon {
+    border: 1px solid currentColor;
+    opacity: 0.75;
+  }
+
+  .theme-toggle__label {
+    margin-left: 0.7rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
   }
 
   #main-nav.is-scrolled .nav-shell {
@@ -167,6 +278,15 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
     box-shadow: 0 18px 70px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  :global(html[data-theme="light"]) #main-nav.is-scrolled,
+  :global(html[data-theme="light"]) #main-nav.is-menu-open,
+  :global(html[data-theme="light"]) #main-nav.is-scrolled .nav-shell,
+  :global(html[data-theme="light"]) .mobile-nav-menu,
+  :global(html[data-theme="light"]) .mobile-lang-switch,
+  :global(html[data-theme="light"]) .mobile-nav-toggle {
+    color: #17120F;
   }
 
   @media (max-width: 767px) {
@@ -181,6 +301,7 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
       box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32);
       backdrop-filter: blur(20px) saturate(140%);
       -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border-radius: var(--radius-ui);
     }
 
     .nav-shell {
@@ -198,6 +319,7 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
       border: 1px solid rgba(212, 184, 134, 0.28);
       background: rgba(244, 239, 230, 0.06);
       color: #F4EFE6;
+      border-radius: 999px;
     }
 
     .mobile-lang-switch {
@@ -265,6 +387,24 @@ const alternatePath = lang === 'en' ? '/fr/' : '/en/';
 
     .mobile-nav-menu__langs .is-active {
       color: #D4B886;
+    }
+
+    .theme-toggle--mobile {
+      width: auto;
+      height: 48px;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      margin: 0.85rem;
+      padding-inline: 0.8rem 1rem;
+    }
+
+    .theme-toggle--mobile::before {
+      left: 0.8rem;
+      top: 13px;
+    }
+
+    .theme-toggle--mobile[data-theme-state="light"]::before {
+      transform: translateX(20px);
     }
   }
 

@@ -9,7 +9,7 @@ const t = lang === 'en' ? en : fr;
 <section class="history-section py-32 px-6 md:px-12 text-noir-orfevre relative overflow-hidden" id="history">
   <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
 
-    <div class="md:col-span-5 relative group history-img-container">
+    <div class="md:col-span-5 relative group history-img-container image-glide-left">
       <div class="aspect-[3/4] w-full overflow-hidden">
         <img
           src="/images/about/image_14.jpg"
@@ -53,9 +53,9 @@ const t = lang === 'en' ? en : fr;
       if (imageWrap && !reduced) {
         gsap.fromTo(
           imageWrap,
-          { y: 96, opacity: 0, rotate: -1.4, clipPath: "inset(10% 0% 10% 0%)" },
+          { x: -120, opacity: 0, rotate: -1.4, clipPath: "inset(0% 18% 0% 0%)" },
           {
-            y: 0,
+            x: 0,
             opacity: 1,
             rotate: 0,
             clipPath: "inset(0% 0% 0% 0%)",
